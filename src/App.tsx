@@ -3,36 +3,51 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
 import FlujoCaja from "./pages/FlujoCaja";
 import NotFound from "./pages/NotFound";
+import { syncClientStatuses } from "./lib/store";
+import { Notification } from "./lib/types";
+import { Client } from "./lib/types";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-background">
-          <Navbar />
-          <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/pagos" element={<Pagos />} />
-              <Route path="/caja" element={<FlujoCaja />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+
+  useEffect(() => {
+    const { updatedClients, notifications: notifs } = syncClientStatuses();
+    setClients(updatedClients);
+    setNotifications(notifs);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-background">
+            <Navbar notifications={notifications} />
+            <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+              <Routes>
+                <Route path="/" element={<Dashboard clients={clients} notifications={notifications} />} />
+                <Route path="/clientes" element={<Clientes />} />
+                <Route path="/pagos" element={<Pagos />} />
+                <Route path="/caja" element={<FlujoCaja />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

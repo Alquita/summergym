@@ -1,4 +1,4 @@
-import { Client, Payment, CashFlowEntry } from './types';
+import { Client, Payment, CashFlowEntry, Notification } from './types';
 
 const CLIENTS_KEY = 'summer_gym_clients';
 const PAYMENTS_KEY = 'summer_gym_payments';
@@ -81,14 +81,80 @@ export function deleteCashFlowEntry(id: string): void {
   localStorage.setItem(CASHFLOW_KEY, JSON.stringify(entries));
 }
 
-// Check payment status - inactive if no payment in last 2 months
-export function checkClientStatus(clientId: string, payments: Payment[]): 'activo' | 'inactivo' {
-  const clientPayments = payments.filter(p => p.clientId === clientId);
-  if (clientPayments.length === 0) return 'inactivo';
-  const lastPayment = clientPayments.sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime())[0];
-  const twoMonthsAgo = new Date();
-  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-  return new Date(lastPayment.fechaPago) >= twoMonthsAgo ? 'activo' : 'inactivo';
+// Auto-update statuses & generate notifications
+export function syncClientStatuses(): { updatedClients: Client[]; notifications: Notification[] } {
+  const clients = getClients();
+  const payments = getPayments();
+  const notifications: Notification[] = [];
+  const now = new Date();
+  let changed = false;
+
+  clients.forEach(client => {
+    const clientPayments = payments
+      .filter(p => p.clientId === client.id)
+      .sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
+
+    if (clientPayments.length > 0) {
+      const lastPayment = new Date(clientPayments[0].fechaPago);
+      const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
+
+      // Vencida: más de 35 días → inactivo
+      if (daysSince > 35) {
+        if (client.estado === 'activo') {
+          client.estado = 'inactivo';
+          changed = true;
+        }
+        notifications.push({
+          id: generateId(),
+          type: 'cuota_vencida',
+          clientId: client.id,
+          clientName: `${client.nombre} ${client.apellido}`,
+          message: `Cuota vencida hace ${daysSince - 30} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          date: now.toISOString(),
+          read: false,
+        });
+      }
+      // Por vencer: entre 25 y 35 días
+      else if (daysSince >= 25) {
+        notifications.push({
+          id: generateId(),
+          type: 'cuota_por_vencer',
+          clientId: client.id,
+          clientName: `${client.nombre} ${client.apellido}`,
+          message: `La cuota vence en ${35 - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          date: now.toISOString(),
+          read: false,
+        });
+      }
+    }
+
+    // Cumpleaños
+    if (client.fechaNacimiento) {
+      const bday = new Date(client.fechaNacimiento + 'T12:00:00');
+      const thisYearBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
+      const daysUntil = Math.floor((thisYearBday.getTime() - now.getTime()) / 86400000);
+
+      if (daysUntil >= 0 && daysUntil <= 7) {
+        notifications.push({
+          id: generateId(),
+          type: 'cumpleanos',
+          clientId: client.id,
+          clientName: `${client.nombre} ${client.apellido}`,
+          message: daysUntil === 0
+            ? `¡Hoy es su cumpleaños! 🎂`
+            : `Cumpleaños en ${daysUntil} día${daysUntil > 1 ? 's' : ''} (${thisYearBday.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })})`,
+          date: now.toISOString(),
+          read: false,
+        });
+      }
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+  }
+
+  return { updatedClients: clients, notifications };
 }
 
 function getInitialClients(): Client[] {
@@ -139,6 +205,20 @@ function getInitialClients(): Client[] {
     { id: '44', nombre: 'Sonia', apellido: 'Lujan', fechaNacimiento: '1966-05-24', direccion: 'Pje Gazcon 2460', telefono: '3586019610', plan: '2 x s', estado: 'activo', fechaIngreso: '2025-06-03' },
     { id: '45', nombre: 'Celeste', apellido: 'Guzman', fechaNacimiento: '1994-08-24', edad: 30, direccion: 'Goudard 396', telefono: '3584022158', plan: '2 x s', estado: 'activo', fechaIngreso: '2025-06-27' },
     { id: '46', nombre: 'Antonella', apellido: 'Saquetto', fechaNacimiento: '1994-05-09', edad: 31, direccion: 'Arturo M Bas 1029', telefono: '3584014724', telefonoEmergencia: '3586020821', plan: '2 x s', estado: 'activo', fechaIngreso: '2025-06-27' },
+    { id: '47', nombre: 'Lara', apellido: 'Rodriguez', fechaNacimiento: '2002-07-29', edad: 22, direccion: 'Alcalde Acosta 1192', telefono: '3584302725', telefonoEmergencia: '3584208159', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-05-16' },
+    { id: '48', nombre: 'Gian', apellido: 'Perez', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-05-06' },
+    { id: '49', nombre: 'Luis', apellido: 'Lupano', fechaNacimiento: '1967-12-13', direccion: 'Arturo M Bas 1948', telefono: '3584394042', plan: '3 x s', estado: 'activo', fechaIngreso: '2025-06-03' },
+    { id: '50', nombre: 'Alan', apellido: 'Vega', fechaNacimiento: '2001-08-24', edad: 23, telefono: '3584208003', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-01' },
+    { id: '51', nombre: 'Florencia', apellido: 'Perez', fechaNacimiento: '2000-01-19', edad: 25, telefono: '3585480918', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-01' },
+    { id: '52', nombre: 'Marcos', apellido: 'Mercau', fechaNacimiento: '2005-09-22', edad: 19, direccion: 'Perez Bulnes 2071', telefono: '3584208155', plan: '3 x s', estado: 'activo', fechaIngreso: '2025-06-16' },
+    { id: '53', nombre: 'Aixa', apellido: 'Aguirre', fechaNacimiento: '2002-01-26', edad: 23, direccion: 'Trejo y Sanabria 1145', telefono: '3585098547', plan: '3 x s', estado: 'activo', fechaIngreso: '2025-06-11' },
+    { id: '54', nombre: 'Lorena', apellido: 'Arballo', fechaNacimiento: '1980-09-15', edad: 44, direccion: 'Trejo y Sanabria 1145', telefono: '3584235921', plan: '3 x s', estado: 'activo', fechaIngreso: '2025-06-11' },
+    { id: '55', nombre: 'German', apellido: 'Aguirre', fechaNacimiento: '1980-07-11', edad: 44, direccion: 'Trejo y Sanabria 1145', telefono: '3585066883', telefonoEmergencia: '3584235921', plan: '3 x s', estado: 'activo', fechaIngreso: '2025-06-11' },
+    { id: '56', nombre: 'Fernanda', apellido: 'Alfonso', fechaNacimiento: '1988-12-08', edad: 36, direccion: 'Roque Saenz Peña 1625', telefono: '3585134835', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-20' },
+    { id: '57', nombre: 'Clara', apellido: 'Diaz', fechaNacimiento: '1995-07-30', edad: 29, direccion: 'Fotheringam 736', telefono: '3584315790', telefonoEmergencia: '3586023298', plan: '2 x s', estado: 'activo', fechaIngreso: '2025-06-27' },
+    { id: '58', nombre: 'Camila', apellido: 'Aguirre', fechaNacimiento: '2004-10-27', edad: 20, direccion: 'Trejo y Sanabria 1145', telefono: '3585623352', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-30' },
+    { id: '59', nombre: 'Ezequiel', apellido: 'Velasquez', fechaNacimiento: '1997-03-18', edad: 28, direccion: 'Blas Parera 1321', telefono: '3585167755', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-30' },
+    { id: '60', nombre: 'Belen', apellido: 'Alfonso', fechaNacimiento: '1980-06-15', edad: 45, direccion: 'Trejo y Sanabria 1242', telefono: '3584909102', plan: 'Pase libre', estado: 'activo', fechaIngreso: '2025-06-30' },
   ];
 }
 

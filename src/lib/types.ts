@@ -35,3 +35,13 @@ export interface CashFlowEntry {
   tipo: 'ingreso_cliente' | 'ingreso_otro' | 'egreso' | 'adelanto' | 'aporte';
   observaciones?: string;
 }
+
+export interface Notification {
+  id: string;
+  type: 'cuota_por_vencer' | 'cuota_vencida' | 'cumpleanos';
+  clientId: string;
+  clientName: string;
+  message: string;
+  date: string;
+  read: boolean;
+}

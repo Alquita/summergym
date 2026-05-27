@@ -135,9 +135,12 @@ export function deleteCashFlowEntry(id: string): void {
 export function syncClientStatuses(): { updatedClients: Client[]; notifications: Notification[] } {
   const clients = getClients();
   const payments = getPayments();
+  const settings = getSettings();
   const notifications: Notification[] = [];
   const now = new Date();
   let changed = false;
+  const limite = settings.diasInactividad;
+  const alerta = settings.diasAlerta;
 
   clients.forEach(client => {
     const clientPayments = payments
@@ -148,8 +151,8 @@ export function syncClientStatuses(): { updatedClients: Client[]; notifications:
       const lastPayment = new Date(clientPayments[0].fechaPago);
       const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
 
-      // Vencida: más de 35 días → inactivo
-      if (daysSince > 35) {
+      // Vencida → inactivo
+      if (daysSince > limite) {
         if (client.estado === 'activo') {
           client.estado = 'inactivo';
           changed = true;
@@ -159,24 +162,25 @@ export function syncClientStatuses(): { updatedClients: Client[]; notifications:
           type: 'cuota_vencida',
           clientId: client.id,
           clientName: `${client.nombre} ${client.apellido}`,
-          message: `Cuota vencida hace ${daysSince - 30} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          message: `Cuota vencida hace ${daysSince - (limite - 5)} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(),
           read: false,
         });
       }
-      // Por vencer: entre 25 y 35 días
-      else if (daysSince >= 25) {
+      // Por vencer
+      else if (daysSince >= limite - alerta) {
         notifications.push({
           id: generateId(),
           type: 'cuota_por_vencer',
           clientId: client.id,
           clientName: `${client.nombre} ${client.apellido}`,
-          message: `La cuota vence en ${35 - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          message: `La cuota vence en ${limite - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(),
           read: false,
         });
       }
     }
+
 
     // Cumpleaños
     if (client.fechaNacimiento) {

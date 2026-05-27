@@ -234,11 +234,6 @@ function getInitialClients(): Client[] {
 }
 
 function getInitialPayments(): Payment[] {
-  return [
-    { id: 'p1', clientId: '1', clientName: 'Arguello Sandra', mes: 'Mayo', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-05-07', plan: 'Pase libre' },
-    { id: 'p2', clientId: '2', clientName: 'Ayala Cristian', mes: 'Mayo', anio: 2025, modalidadPago: 'Transferencia', monto: 28000, fechaPago: '2025-05-26', plan: '3 x s' },
-    { id: 'p3', clientId: '3', clientName: 'Cavana Graciela', mes: 'Mayo', anio: 2025, modalidadPago: 'Efectivo', monto: 30000, fechaPago: '2025-05-19', plan: 'Pase libre' },
-    { id: 'p4', clientId: '1', clientName: 'Arguello Sandra', mes: 'Junio', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-06-07', plan: 'Pase libre' },
-    { id: 'p5', clientId: '1', clientName: 'Arguello Sandra', mes: 'Julio', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-07-08', plan: 'Pase libre' },
-  ];
+  return [];
 }
+

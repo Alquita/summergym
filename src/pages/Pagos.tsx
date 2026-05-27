@@ -1,210 +1,209 @@
 import { useState, useMemo } from "react";
-import { Plus, X, Search, Check } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CreditCard, UserPlus, Search, Check, X, CalendarDays, DollarSign, CheckCircle2 } from "lucide-react";
 import { getPayments, savePayment, getClients } from "../lib/store";
+import { Payment } from "../lib/types";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const metodos: Payment['modalidadPago'][] = ['Efectivo', 'Transferencia', 'Debito', 'Credito'];
 
 export default function Pagos() {
   const [payments, setPayments] = useState(getPayments);
   const clients = useMemo(() => getClients(), []);
-  const [showForm, setShowForm] = useState(false);
-  const [filterMes, setFilterMes] = useState('');
   const [clientSearch, setClientSearch] = useState('');
-  const [form, setForm] = useState({ clientId: '', mes: meses[new Date().getMonth()], anio: new Date().getFullYear(), modalidadPago: 'Efectivo' as const, monto: '', fechaPago: new Date().toISOString().split('T')[0], plan: 'Pase libre' });
+  const [form, setForm] = useState({
+    clientId: '',
+    mes: meses[new Date().getMonth()],
+    anio: new Date().getFullYear(),
+    modalidadPago: 'Efectivo' as Payment['modalidadPago'],
+    monto: '',
+    fechaPago: new Date().toISOString().split('T')[0],
+    plan: 'Pase libre',
+  });
 
   const selectedClient = clients.find(c => c.id === form.clientId);
   const clientResults = useMemo(() => {
     const q = clientSearch.trim().toLowerCase();
     if (!q) return [];
     return clients
-      .filter(c => `${c.nombre} ${c.apellido} ${c.apellido} ${c.nombre}`.toLowerCase().includes(q))
+      .filter(c => `${c.nombre} ${c.apellido}`.toLowerCase().includes(q))
       .slice(0, 8);
   }, [clientSearch, clients]);
 
-  const filtered = useMemo(() =>
-    filterMes ? payments.filter(p => p.mes === filterMes) : payments,
-    [payments, filterMes]
-  );
-
-  const totalMes = filtered.reduce((s, p) => s + p.monto, 0);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const client = clients.find(c => c.id === form.clientId);
-    if (!client) return;
-    savePayment({ ...form, monto: Number(form.monto), clientName: `${client.apellido} ${client.nombre}`, modalidadPago: form.modalidadPago as 'Efectivo' | 'Transferencia' });
+    if (!selectedClient || !form.monto) return;
+    savePayment({
+      ...form,
+      monto: Number(form.monto),
+      clientName: `${selectedClient.apellido} ${selectedClient.nombre}`,
+    });
     setPayments(getPayments());
-    setShowForm(false);
-    setClientSearch('');
     setForm(f => ({ ...f, clientId: '', monto: '' }));
+    setClientSearch('');
   };
 
-  const openForm = () => {
-    setClientSearch('');
-    setForm(f => ({ ...f, clientId: '', monto: '' }));
-    setShowForm(true);
-  };
+  const recent = [...payments].sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()).slice(0, 8);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">Pagos</h1>
-          <p className="text-muted-foreground mt-1">{payments.length} pagos registrados</p>
-        </div>
-        <button onClick={openForm}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Registrar Pago
+    <div className="space-y-6 animate-fade-in max-w-3xl mx-auto">
+      {/* Tabs */}
+      <div className="flex gap-2">
+        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-t-xl bg-primary/15 border border-primary/40 border-b-0 text-primary font-medium text-sm">
+          <CreditCard className="w-4 h-4" /> Registrar Pago
         </button>
+        <Link to="/clientes"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-t-xl bg-secondary/40 border border-border border-b-0 text-muted-foreground font-medium text-sm hover:text-foreground transition-colors">
+          <UserPlus className="w-4 h-4" /> Nuevo Usuario
+        </Link>
       </div>
 
-      {/* Filter */}
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => setFilterMes('')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${!filterMes ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-          Todos
-        </button>
-        {meses.map(m => (
-          <button key={m} onClick={() => setFilterMes(m)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filterMes === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}>
-            {m}
-          </button>
-        ))}
-      </div>
-
-      {/* Summary */}
-      <div className="glass-card p-4">
-        <p className="text-sm text-muted-foreground">Total {filterMes || 'general'}:</p>
-        <p className="text-2xl font-heading font-bold text-success">${totalMes.toLocaleString('es-AR')}</p>
-      </div>
-
-      {/* Table */}
-      <div className="glass-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border/50">
-              <th className="text-left p-3 text-muted-foreground font-medium">Alumno</th>
-              <th className="text-left p-3 text-muted-foreground font-medium">Mes</th>
-              <th className="text-left p-3 text-muted-foreground font-medium">Monto</th>
-              <th className="text-left p-3 text-muted-foreground font-medium">Forma</th>
-              <th className="text-left p-3 text-muted-foreground font-medium">Fecha</th>
-              <th className="text-left p-3 text-muted-foreground font-medium">Plan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(p => (
-              <tr key={p.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
-                <td className="p-3 font-medium">{p.clientName}</td>
-                <td className="p-3 text-muted-foreground">{p.mes} {p.anio}</td>
-                <td className="p-3 font-heading font-semibold text-success">${p.monto.toLocaleString('es-AR')}</td>
-                <td className="p-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${p.modalidadPago === 'Efectivo' ? 'bg-success/15 text-success' : 'bg-primary/15 text-primary'}`}>
-                    {p.modalidadPago}
-                  </span>
-                </td>
-                <td className="p-3 text-muted-foreground">{new Date(p.fechaPago + 'T12:00:00').toLocaleDateString('es-AR')}</td>
-                <td className="p-3 text-muted-foreground">{p.plan}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No hay pagos para este período</p>}
-      </div>
-
-      {/* Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="glass-card p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-semibold text-lg">Registrar Pago</h2>
-              <button onClick={() => setShowForm(false)} className="text-muted-foreground"><X className="w-5 h-5" /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Buscar Alumno</label>
-                {selectedClient ? (
-                  <div className="mt-1 flex items-center justify-between gap-2 px-3 py-2 bg-primary/10 border border-primary/40 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Check className="w-4 h-4 text-primary" />
-                      <span className="font-medium">{selectedClient.apellido} {selectedClient.nombre}</span>
-                      <span className="text-xs text-muted-foreground">· {selectedClient.plan}</span>
-                    </div>
-                    <button type="button" onClick={() => { setForm(p => ({ ...p, clientId: '' })); setClientSearch(''); }}
-                      className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
-                  </div>
-                ) : (
-                  <div className="relative mt-1">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input type="text" value={clientSearch} onChange={e => setClientSearch(e.target.value)} autoFocus
-                      placeholder="Escribí nombre o apellido..."
-                      className="w-full pl-9 pr-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-                    {clientSearch && (
-                      <div className="absolute z-10 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-56 overflow-y-auto">
-                        {clientResults.length === 0 ? (
-                          <p className="px-3 py-2 text-xs text-muted-foreground">Sin resultados</p>
-                        ) : clientResults.map(c => (
-                          <button key={c.id} type="button"
-                            onClick={() => { setForm(p => ({ ...p, clientId: c.id, plan: c.plan || p.plan })); setClientSearch(''); }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/60 transition-colors flex items-center justify-between">
-                            <span>{c.apellido} {c.nombre}</span>
-                            <span className="text-xs text-muted-foreground">{c.plan}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-                <input type="hidden" required value={form.clientId} onChange={() => {}} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Mes</label>
-                  <select value={form.mes} onChange={e => setForm(p => ({ ...p, mes: e.target.value }))}
-                    className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    {meses.map(m => <option key={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium">Año</label>
-                  <input type="number" value={form.anio} onChange={e => setForm(p => ({ ...p, anio: Number(e.target.value) }))}
-                    className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Monto ($)</label>
-                <input type="number" value={form.monto} onChange={e => setForm(p => ({ ...p, monto: e.target.value }))} required
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Forma de Pago</label>
-                <select value={form.modalidadPago} onChange={e => setForm(p => ({ ...p, modalidadPago: e.target.value as any }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  <option>Efectivo</option>
-                  <option>Transferencia</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Fecha de Pago</label>
-                <input type="date" value={form.fechaPago} onChange={e => setForm(p => ({ ...p, fechaPago: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Plan</label>
-                <select value={form.plan} onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  <option>Pase libre</option>
-                  <option>3 x s</option>
-                  <option>2 x s</option>
-                  <option>2 dias</option>
-                </select>
-              </div>
-              <button type="submit" className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity mt-2">
-                Registrar Pago
-              </button>
-            </form>
+      {/* Main Card */}
+      <div className="glass-card p-6 sm:p-8 -mt-6 rounded-tl-none">
+        <div className="flex items-start gap-4 pb-5 border-b border-border/50">
+          <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+            <CreditCard className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold">Registrar Pago</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Buscá el alumno y registrá su cuota mensual</p>
           </div>
         </div>
-      )}
+
+        <form onSubmit={handleSubmit} className="space-y-6 pt-6">
+          {/* Step 1 */}
+          <div>
+            <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">
+              1. Seleccionar Alumno
+            </p>
+            {selectedClient ? (
+              <div className="flex items-center justify-between gap-2 px-4 py-3 bg-primary/10 border border-primary/40 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{selectedClient.apellido} {selectedClient.nombre}</p>
+                    <p className="text-xs text-muted-foreground">Plan: {selectedClient.plan}</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => { setForm(p => ({ ...p, clientId: '' })); setClientSearch(''); }}
+                  className="text-muted-foreground hover:text-foreground p-1"><X className="w-4 h-4" /></button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input type="text" value={clientSearch} onChange={e => setClientSearch(e.target.value)}
+                  placeholder="Buscar por nombre o apellido..."
+                  className="w-full pl-11 pr-4 py-3 bg-input/60 border border-border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+                {clientSearch && (
+                  <div className="absolute z-20 left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-2xl max-h-64 overflow-y-auto">
+                    {clientResults.length === 0 ? (
+                      <p className="px-4 py-3 text-sm text-muted-foreground">Sin resultados</p>
+                    ) : clientResults.map(c => (
+                      <button key={c.id} type="button"
+                        onClick={() => { setForm(p => ({ ...p, clientId: c.id, plan: c.plan || p.plan })); setClientSearch(''); }}
+                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-primary/10 transition-colors flex items-center justify-between border-b border-border/30 last:border-0">
+                        <span className="font-medium">{c.apellido} {c.nombre}</span>
+                        <span className="text-xs text-muted-foreground">{c.plan}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Step 2 */}
+          <div>
+            <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">
+              2. Datos del Pago
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
+                <div className="relative">
+                  <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  <input type="date" value={form.fechaPago} onChange={e => setForm(p => ({ ...p, fechaPago: e.target.value }))}
+                    className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Monto *</label>
+                <div className="relative">
+                  <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input type="number" value={form.monto} onChange={e => setForm(p => ({ ...p, monto: e.target.value }))} required
+                    placeholder="35000"
+                    className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Mes</label>
+                <select value={form.mes} onChange={e => setForm(p => ({ ...p, mes: e.target.value }))}
+                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                  {meses.map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Año</label>
+                <input type="number" value={form.anio} onChange={e => setForm(p => ({ ...p, anio: Number(e.target.value) }))}
+                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-xs text-muted-foreground font-medium mb-2 block">Método de Pago *</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {metodos.map(m => {
+                  const active = form.modalidadPago === m;
+                  return (
+                    <button key={m} type="button" onClick={() => setForm(p => ({ ...p, modalidadPago: m }))}
+                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                        active
+                          ? 'bg-primary/15 border-primary/50 text-primary shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
+                          : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-border/80'
+                      }`}>
+                      {m}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" disabled={!selectedClient || !form.monto}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3.5 rounded-xl font-heading font-semibold text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_25px_-5px_hsl(var(--primary)/0.5)]">
+            <CheckCircle2 className="w-5 h-5" /> Registrar Pago
+          </button>
+        </form>
+      </div>
+
+      {/* Recent payments */}
+      <div className="glass-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-heading font-semibold">Pagos Recientes</h2>
+          <span className="text-xs text-muted-foreground">{payments.length} en total</span>
+        </div>
+        {recent.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6 text-sm">Aún no hay pagos registrados</p>
+        ) : (
+          <div className="space-y-2">
+            {recent.map(p => (
+              <div key={p.id} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-secondary/30 rounded-lg">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{p.clientName}</p>
+                  <p className="text-xs text-muted-foreground">{p.mes} {p.anio} · {p.modalidadPago}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-heading font-semibold text-success">${p.monto.toLocaleString('es-AR')}</p>
+                  <p className="text-[10px] text-muted-foreground">{new Date(p.fechaPago + 'T12:00:00').toLocaleDateString('es-AR')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

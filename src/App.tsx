@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
 import FlujoCaja from "./pages/FlujoCaja";
+import Configuracion from "./pages/Configuracion";
+
 import NotFound from "./pages/NotFound";
 import { syncClientStatuses } from "./lib/store";
 import { Notification } from "./lib/types";
@@ -40,7 +42,9 @@ const App = () => {
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/pagos" element={<Pagos />} />
                 <Route path="/caja" element={<FlujoCaja />} />
+                <Route path="/configuracion" element={<Configuracion />} />
                 <Route path="*" element={<NotFound />} />
+
               </Routes>
             </main>
           </div>

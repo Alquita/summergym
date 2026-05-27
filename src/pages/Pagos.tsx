@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { CreditCard, UserPlus, Search, Check, X, CalendarDays, DollarSign, CheckCircle2 } from "lucide-react";
-import { getPayments, savePayment, getClients } from "../lib/store";
+import { getPayments, savePayment, getClients, getSettings } from "../lib/store";
 import { Payment } from "../lib/types";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -10,16 +10,18 @@ const metodos: Payment['modalidadPago'][] = ['Efectivo', 'Transferencia', 'Debit
 export default function Pagos() {
   const [payments, setPayments] = useState(getPayments);
   const clients = useMemo(() => getClients(), []);
+  const settings = useMemo(() => getSettings(), []);
   const [clientSearch, setClientSearch] = useState('');
   const [form, setForm] = useState({
     clientId: '',
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
     modalidadPago: 'Efectivo' as Payment['modalidadPago'],
-    monto: '',
+    monto: String(settings.cuotaMensual || ''),
     fechaPago: new Date().toISOString().split('T')[0],
     plan: 'Pase libre',
   });
+
 
   const selectedClient = clients.find(c => c.id === form.clientId);
   const clientResults = useMemo(() => {
@@ -39,9 +41,10 @@ export default function Pagos() {
       clientName: `${selectedClient.apellido} ${selectedClient.nombre}`,
     });
     setPayments(getPayments());
-    setForm(f => ({ ...f, clientId: '', monto: '' }));
+    setForm(f => ({ ...f, clientId: '', monto: String(settings.cuotaMensual || '') }));
     setClientSearch('');
   };
+
 
   const recent = [...payments].sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()).slice(0, 8);
 

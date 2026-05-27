@@ -45,3 +45,13 @@ export interface Notification {
   date: string;
   read: boolean;
 }
+
+export interface Settings {
+  gymName: string;
+  direccion: string;
+  telefono: string;
+  cuotaMensual: number;
+  diasAlerta: number;
+  diasInactividad: number;
+}
+

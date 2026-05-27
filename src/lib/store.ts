@@ -1,12 +1,51 @@
-import { Client, Payment, CashFlowEntry, Notification } from './types';
+import { Client, Payment, CashFlowEntry, Notification, Settings } from './types';
 
 const CLIENTS_KEY = 'summer_gym_clients';
 const PAYMENTS_KEY = 'summer_gym_payments_v2';
 const CASHFLOW_KEY = 'summer_gym_cashflow_v2';
+const SETTINGS_KEY = 'summer_gym_settings';
+
+const DEFAULT_SETTINGS: Settings = {
+  gymName: 'Summer Gym',
+  direccion: '',
+  telefono: '',
+  cuotaMensual: 35000,
+  diasAlerta: 5,
+  diasInactividad: 35,
+};
+
+export function getSettings(): Settings {
+  const data = localStorage.getItem(SETTINGS_KEY);
+  if (!data) return DEFAULT_SETTINGS;
+  return { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
+}
+
+export function saveSettings(settings: Settings): void {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+export function exportAllData(): string {
+  return JSON.stringify({
+    clients: getClients(),
+    payments: getPayments(),
+    cashflow: getCashFlow(),
+    settings: getSettings(),
+    exportedAt: new Date().toISOString(),
+  }, null, 2);
+}
+
+export function importAllData(json: string): void {
+  const data = JSON.parse(json);
+  if (data.clients) localStorage.setItem(CLIENTS_KEY, JSON.stringify(data.clients));
+  if (data.payments) localStorage.setItem(PAYMENTS_KEY, JSON.stringify(data.payments));
+  if (data.cashflow) localStorage.setItem(CASHFLOW_KEY, JSON.stringify(data.cashflow));
+  if (data.settings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+}
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
+
 
 // Clients
 export function getClients(): Client[] {
@@ -96,9 +135,12 @@ export function deleteCashFlowEntry(id: string): void {
 export function syncClientStatuses(): { updatedClients: Client[]; notifications: Notification[] } {
   const clients = getClients();
   const payments = getPayments();
+  const settings = getSettings();
   const notifications: Notification[] = [];
   const now = new Date();
   let changed = false;
+  const limite = settings.diasInactividad;
+  const alerta = settings.diasAlerta;
 
   clients.forEach(client => {
     const clientPayments = payments
@@ -109,8 +151,8 @@ export function syncClientStatuses(): { updatedClients: Client[]; notifications:
       const lastPayment = new Date(clientPayments[0].fechaPago);
       const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
 
-      // Vencida: más de 35 días → inactivo
-      if (daysSince > 35) {
+      // Vencida → inactivo
+      if (daysSince > limite) {
         if (client.estado === 'activo') {
           client.estado = 'inactivo';
           changed = true;
@@ -120,24 +162,25 @@ export function syncClientStatuses(): { updatedClients: Client[]; notifications:
           type: 'cuota_vencida',
           clientId: client.id,
           clientName: `${client.nombre} ${client.apellido}`,
-          message: `Cuota vencida hace ${daysSince - 30} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          message: `Cuota vencida hace ${daysSince - (limite - 5)} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(),
           read: false,
         });
       }
-      // Por vencer: entre 25 y 35 días
-      else if (daysSince >= 25) {
+      // Por vencer
+      else if (daysSince >= limite - alerta) {
         notifications.push({
           id: generateId(),
           type: 'cuota_por_vencer',
           clientId: client.id,
           clientName: `${client.nombre} ${client.apellido}`,
-          message: `La cuota vence en ${35 - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+          message: `La cuota vence en ${limite - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(),
           read: false,
         });
       }
     }
+
 
     // Cumpleaños
     if (client.fechaNacimiento) {

@@ -20,19 +20,21 @@ interface NavbarProps {
 export default function Navbar({ notifications }: NavbarProps) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const settings = getSettings();
 
   return (
     <nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border/40 px-4 lg:px-8">
       <div className="flex items-center justify-between h-16 max-w-7xl mx-auto">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
-            <span className="font-heading font-bold text-primary-foreground text-xl">S</span>
+            <span className="font-heading font-bold text-primary-foreground text-xl">{settings.gymName[0] || 'S'}</span>
           </div>
           <div className="hidden sm:block">
-            <span className="font-heading font-bold text-lg tracking-tight block leading-tight">Summer Gym</span>
+            <span className="font-heading font-bold text-lg tracking-tight block leading-tight">{settings.gymName}</span>
             <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Management</span>
           </div>
         </Link>
+
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-1">

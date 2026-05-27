@@ -35,6 +35,14 @@ export default function Pagos() {
     savePayment({ ...form, monto: Number(form.monto), clientName: `${client.apellido} ${client.nombre}`, modalidadPago: form.modalidadPago as 'Efectivo' | 'Transferencia' });
     setPayments(getPayments());
     setShowForm(false);
+    setClientSearch('');
+    setForm(f => ({ ...f, clientId: '', monto: '' }));
+  };
+
+  const openForm = () => {
+    setClientSearch('');
+    setForm(f => ({ ...f, clientId: '', monto: '' }));
+    setShowForm(true);
   };
 
   return (

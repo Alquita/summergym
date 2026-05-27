@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, CreditCard, DollarSign, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, DollarSign, Menu, X, Settings as SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { Notification } from "../lib/types";
+import { getSettings } from "../lib/store";
 import NotificationPanel from "./NotificationPanel";
 
 const navItems = [
@@ -10,6 +11,7 @@ const navItems = [
   { path: "/pagos", label: "Pagos", icon: CreditCard },
   { path: "/caja", label: "Flujo de Caja", icon: DollarSign },
 ];
+
 
 interface NavbarProps {
   notifications: Notification[];

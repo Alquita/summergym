@@ -1,8 +1,8 @@
 import { Client, Payment, CashFlowEntry, Notification } from './types';
 
 const CLIENTS_KEY = 'summer_gym_clients';
-const PAYMENTS_KEY = 'summer_gym_payments';
-const CASHFLOW_KEY = 'summer_gym_cashflow';
+const PAYMENTS_KEY = 'summer_gym_payments_v2';
+const CASHFLOW_KEY = 'summer_gym_cashflow_v2';
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -54,6 +54,17 @@ export function savePayment(payment: Omit<Payment, 'id'>): Payment {
   const newPayment = { ...payment, id: generateId() };
   payments.push(newPayment);
   localStorage.setItem(PAYMENTS_KEY, JSON.stringify(payments));
+
+  // Registrar automáticamente en flujo de caja
+  saveCashFlowEntry({
+    fecha: newPayment.fechaPago,
+    detalle: `Cuota ${newPayment.mes} ${newPayment.anio} - ${newPayment.clientName}`,
+    ingreso: newPayment.monto,
+    egreso: 0,
+    tipo: 'ingreso_cliente',
+    observaciones: `Pago ${newPayment.modalidadPago} - ${newPayment.plan}`,
+  });
+
   return newPayment;
 }
 
@@ -223,11 +234,6 @@ function getInitialClients(): Client[] {
 }
 
 function getInitialPayments(): Payment[] {
-  return [
-    { id: 'p1', clientId: '1', clientName: 'Arguello Sandra', mes: 'Mayo', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-05-07', plan: 'Pase libre' },
-    { id: 'p2', clientId: '2', clientName: 'Ayala Cristian', mes: 'Mayo', anio: 2025, modalidadPago: 'Transferencia', monto: 28000, fechaPago: '2025-05-26', plan: '3 x s' },
-    { id: 'p3', clientId: '3', clientName: 'Cavana Graciela', mes: 'Mayo', anio: 2025, modalidadPago: 'Efectivo', monto: 30000, fechaPago: '2025-05-19', plan: 'Pase libre' },
-    { id: 'p4', clientId: '1', clientName: 'Arguello Sandra', mes: 'Junio', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-06-07', plan: 'Pase libre' },
-    { id: 'p5', clientId: '1', clientName: 'Arguello Sandra', mes: 'Julio', anio: 2025, modalidadPago: 'Transferencia', monto: 30000, fechaPago: '2025-07-08', plan: 'Pase libre' },
-  ];
+  return [];
 }
+

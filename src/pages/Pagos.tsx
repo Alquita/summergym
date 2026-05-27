@@ -121,12 +121,40 @@ export default function Pagos() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="text-xs text-muted-foreground font-medium">Alumno</label>
-                <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))} required
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  <option value="">Seleccionar alumno</option>
-                  {clients.map(c => <option key={c.id} value={c.id}>{c.apellido} {c.nombre}</option>)}
-                </select>
+                <label className="text-xs text-muted-foreground font-medium">Buscar Alumno</label>
+                {selectedClient ? (
+                  <div className="mt-1 flex items-center justify-between gap-2 px-3 py-2 bg-primary/10 border border-primary/40 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Check className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{selectedClient.apellido} {selectedClient.nombre}</span>
+                      <span className="text-xs text-muted-foreground">· {selectedClient.plan}</span>
+                    </div>
+                    <button type="button" onClick={() => { setForm(p => ({ ...p, clientId: '' })); setClientSearch(''); }}
+                      className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+                  </div>
+                ) : (
+                  <div className="relative mt-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input type="text" value={clientSearch} onChange={e => setClientSearch(e.target.value)} autoFocus
+                      placeholder="Escribí nombre o apellido..."
+                      className="w-full pl-9 pr-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    {clientSearch && (
+                      <div className="absolute z-10 left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                        {clientResults.length === 0 ? (
+                          <p className="px-3 py-2 text-xs text-muted-foreground">Sin resultados</p>
+                        ) : clientResults.map(c => (
+                          <button key={c.id} type="button"
+                            onClick={() => { setForm(p => ({ ...p, clientId: c.id, plan: c.plan || p.plan })); setClientSearch(''); }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/60 transition-colors flex items-center justify-between">
+                            <span>{c.apellido} {c.nombre}</span>
+                            <span className="text-xs text-muted-foreground">{c.plan}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <input type="hidden" required value={form.clientId} onChange={() => {}} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

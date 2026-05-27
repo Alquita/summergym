@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Pagos from "./pages/Pagos";
 import FlujoCaja from "./pages/FlujoCaja";
+import Configuracion from "./pages/Configuracion";
+
 import NotFound from "./pages/NotFound";
 import { syncClientStatuses } from "./lib/store";
 import { Notification } from "./lib/types";

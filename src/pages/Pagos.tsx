@@ -9,7 +9,17 @@ export default function Pagos() {
   const clients = useMemo(() => getClients(), []);
   const [showForm, setShowForm] = useState(false);
   const [filterMes, setFilterMes] = useState('');
+  const [clientSearch, setClientSearch] = useState('');
   const [form, setForm] = useState({ clientId: '', mes: meses[new Date().getMonth()], anio: new Date().getFullYear(), modalidadPago: 'Efectivo' as const, monto: '', fechaPago: new Date().toISOString().split('T')[0], plan: 'Pase libre' });
+
+  const selectedClient = clients.find(c => c.id === form.clientId);
+  const clientResults = useMemo(() => {
+    const q = clientSearch.trim().toLowerCase();
+    if (!q) return [];
+    return clients
+      .filter(c => `${c.nombre} ${c.apellido} ${c.apellido} ${c.nombre}`.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [clientSearch, clients]);
 
   const filtered = useMemo(() =>
     filterMes ? payments.filter(p => p.mes === filterMes) : payments,

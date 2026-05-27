@@ -59,10 +59,16 @@ export default function Navbar({ notifications }: NavbarProps) {
 
         <div className="flex items-center gap-2">
           <NotificationPanel notifications={notifications} />
+          <Link to="/configuracion"
+            className={`p-2 rounded-lg transition-colors ${location.pathname === '/configuracion' ? 'text-primary bg-primary/15' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
+            title="Configuración">
+            <SettingsIcon className={`w-5 h-5 ${location.pathname === '/configuracion' ? 'animate-[spin_3s_linear_infinite]' : ''}`} />
+          </Link>
           <button className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors" onClick={() => setOpen(!open)}>
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+
       </div>
 
       {open && (

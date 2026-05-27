@@ -41,9 +41,10 @@ export default function Pagos() {
       clientName: `${selectedClient.apellido} ${selectedClient.nombre}`,
     });
     setPayments(getPayments());
-    setForm(f => ({ ...f, clientId: '', monto: '' }));
+    setForm(f => ({ ...f, clientId: '', monto: String(settings.cuotaMensual || '') }));
     setClientSearch('');
   };
+
 
   const recent = [...payments].sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()).slice(0, 8);
 

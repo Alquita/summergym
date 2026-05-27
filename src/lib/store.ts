@@ -1,8 +1,8 @@
 import { Client, Payment, CashFlowEntry, Notification } from './types';
 
 const CLIENTS_KEY = 'summer_gym_clients';
-const PAYMENTS_KEY = 'summer_gym_payments';
-const CASHFLOW_KEY = 'summer_gym_cashflow';
+const PAYMENTS_KEY = 'summer_gym_payments_v2';
+const CASHFLOW_KEY = 'summer_gym_cashflow_v2';
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);

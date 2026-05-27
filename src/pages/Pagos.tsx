@@ -52,7 +52,7 @@ export default function Pagos() {
           <h1 className="text-3xl font-heading font-bold">Pagos</h1>
           <p className="text-muted-foreground mt-1">{payments.length} pagos registrados</p>
         </div>
-        <button onClick={() => setShowForm(true)}
+        <button onClick={openForm}
           className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
           <Plus className="w-4 h-4" /> Registrar Pago
         </button>

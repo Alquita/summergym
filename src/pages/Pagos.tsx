@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Search, Check } from "lucide-react";
 import { getPayments, savePayment, getClients } from "../lib/store";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];

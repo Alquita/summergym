@@ -19,7 +19,7 @@ export interface Payment {
   clientName: string;
   mes: string;
   anio: number;
-  modalidadPago: 'Efectivo' | 'Transferencia';
+  modalidadPago: 'Efectivo' | 'Transferencia' | 'Debito' | 'Credito';
   monto: number;
   fechaPago: string;
   plan: string;

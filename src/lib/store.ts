@@ -54,6 +54,17 @@ export function savePayment(payment: Omit<Payment, 'id'>): Payment {
   const newPayment = { ...payment, id: generateId() };
   payments.push(newPayment);
   localStorage.setItem(PAYMENTS_KEY, JSON.stringify(payments));
+
+  // Registrar automáticamente en flujo de caja
+  saveCashFlowEntry({
+    fecha: newPayment.fechaPago,
+    detalle: `Cuota ${newPayment.mes} ${newPayment.anio} - ${newPayment.clientName}`,
+    ingreso: newPayment.monto,
+    egreso: 0,
+    tipo: 'ingreso_cliente',
+    observaciones: `Pago ${newPayment.modalidadPago} - ${newPayment.plan}`,
+  });
+
   return newPayment;
 }
 

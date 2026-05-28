@@ -80,11 +80,11 @@ export default function Clientes() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-heading font-bold">Clientes</h1>
-          <p className="text-muted-foreground mt-1">{clients.length} alumnos registrados</p>
+          <p className="text-muted-foreground mt-1">{clients.length} clientes registrados</p>
         </div>
         <button onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm); }}
           className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
-          <Plus className="w-4 h-4" /> Nuevo Alumno
+          <Plus className="w-4 h-4" /> Nuevo Cliente
         </button>
       </div>
 
@@ -232,7 +232,7 @@ export default function Clientes() {
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
           <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-semibold text-lg">{editingId ? 'Editar Alumno' : 'Nuevo Alumno'}</h2>
+              <h2 className="font-heading font-semibold text-lg">{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
               <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -267,7 +267,7 @@ export default function Clientes() {
                   className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" rows={2} />
               </div>
               <button type="submit" className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity mt-2">
-                {editingId ? 'Guardar Cambios' : 'Registrar Alumno'}
+                {editingId ? 'Guardar Cambios' : 'Registrar Cliente'}
               </button>
             </form>
           </div>

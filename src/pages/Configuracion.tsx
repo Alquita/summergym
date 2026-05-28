@@ -93,7 +93,7 @@ export default function Configuracion() {
           <Bell className="w-3 h-3" /> Se enviará una alerta {settings.diasAlerta} días antes del vencimiento
         </p>
         <Field label="Días hasta marcar Inactivo" type="number" value={String(settings.diasInactividad)} onChange={v => setSettings(s => ({ ...s, diasInactividad: Number(v) || 0 }))} />
-        <p className="text-xs text-muted-foreground -mt-1">Los alumnos que pasen {settings.diasInactividad} días sin pagar se marcan inactivos automáticamente.</p>
+        <p className="text-xs text-muted-foreground -mt-1">Los clientes que pasen {settings.diasInactividad} días sin pagar se marcan inactivos automáticamente.</p>
       </Section>
 
       {/* Data Management */}

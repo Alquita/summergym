@@ -31,7 +31,7 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Alumnos" value={clients.length} icon={<Users className="w-5 h-5" />} variant="primary" />
+        <StatCard title="Total Clientes" value={clients.length} icon={<Users className="w-5 h-5" />} variant="primary" />
         <StatCard title="Activos" value={activos} icon={<UserCheck className="w-5 h-5" />} variant="success" subtitle="Al día con sus pagos" />
         <StatCard title="Inactivos" value={inactivos} icon={<UserX className="w-5 h-5" />} variant="destructive" subtitle="Cuota vencida" />
         <StatCard title="Ingresos Totales" value={`$${totalIngresos.toLocaleString('es-AR')}`} icon={<TrendingUp className="w-5 h-5" />} />
@@ -44,7 +44,7 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
             <AlertTriangle className="w-5 h-5 text-warning" /> Alertas de Cuotas
           </h2>
           <div className="space-y-2">
-            {alertas.length === 0 && <p className="text-muted-foreground text-sm py-4 text-center">Todos los alumnos están al día 🎉</p>}
+            {alertas.length === 0 && <p className="text-muted-foreground text-sm py-4 text-center">Todos los clientes están al día 🎉</p>}
             {alertas.slice(0, 8).map(a => (
               <div key={a.id} className={`flex items-center justify-between p-3 rounded-lg ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border border-destructive/15' : 'bg-warning/5 border border-warning/15'}`}>
                 <div className="flex items-center gap-3">

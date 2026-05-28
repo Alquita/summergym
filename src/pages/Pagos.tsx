@@ -69,7 +69,7 @@ export default function Pagos() {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-heading font-bold">Registrar Pago</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Buscá el alumno y registrá su cuota mensual</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Buscá el cliente y registrá su cuota mensual</p>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ export default function Pagos() {
           {/* Step 1 */}
           <div>
             <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">
-              1. Seleccionar Alumno
+              1. Seleccionar Cliente
             </p>
             {selectedClient ? (
               <div className="flex items-center justify-between gap-2 px-4 py-3 bg-primary/10 border border-primary/40 rounded-xl">

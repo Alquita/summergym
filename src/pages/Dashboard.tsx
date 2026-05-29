@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock, Flame, Dumbbell } from "lucide-react";
+import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock, Flame } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { Notification } from "../lib/types";
 import { getPayments, getSettings } from "../lib/store";
+import gymLogo from "@/assets/summergym.jpg";
 
 interface DashboardProps {
   clients: ReturnType<typeof import('../lib/store').getClients>;
@@ -39,8 +40,9 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
             <h1 className="text-4xl md:text-5xl font-heading font-bold gradient-text-fire leading-tight">Dashboard</h1>
             <p className="text-muted-foreground mt-2 max-w-md">Todo lo que pasa en <span className="text-foreground font-semibold">{settings.gymName}</span>, en tiempo real.</p>
           </div>
-          <div className="hidden sm:flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-accent shadow-2xl shadow-primary/40 animate-float">
-            <Dumbbell className="w-10 h-10 text-primary-foreground" />
+          <div className="hidden sm:block relative w-24 h-24 rounded-3xl overflow-hidden shadow-2xl shadow-primary/40 animate-float ring-2 ring-primary/30">
+            <img src={gymLogo} alt="Summer Gym" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-accent/20" />
           </div>
         </div>
       </div>

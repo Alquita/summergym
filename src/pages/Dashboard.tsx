@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock, Flame, Dumbbell } from "lucide-react";
+import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock, Flame } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { Notification } from "../lib/types";
 import { getPayments, getSettings } from "../lib/store";
+import gymLogo from "@/assets/summergym.jpg";
 
 interface DashboardProps {
   clients: ReturnType<typeof import('../lib/store').getClients>;

@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { CreditCard, UserPlus, Search, Check, X, CalendarDays, DollarSign, CheckCircle2, User } from "lucide-react";
-import { getPayments, savePayment, getClients, saveClient, getSettings } from "../lib/store";
-import { Payment } from "../lib/types";
+import { getPayments, savePayment, getClients, saveClient, getSettings, getSettingsSync } from "../lib/store";
+import { Payment, Client, Settings } from "../lib/types";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const metodos: Payment['modalidadPago'][] = ['Efectivo', 'Transferencia', 'Debito', 'Credito'];
@@ -13,9 +13,9 @@ const emptyNewClient = {
 };
 
 export default function Pagos() {
-  const [payments, setPayments] = useState(getPayments);
-  const [clients, setClients] = useState(getClients);
-  const settings = useMemo(() => getSettings(), []);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [settings, setSettings] = useState<Settings>(getSettingsSync());
   const [clientSearch, setClientSearch] = useState('');
   const [tab, setTab] = useState<'pago' | 'nuevo'>('pago');
 
@@ -24,7 +24,7 @@ export default function Pagos() {
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
     modalidadPago: 'Efectivo' as Payment['modalidadPago'],
-    monto: String(settings.cuotaMensual || ''),
+    monto: String(getSettingsSync().cuotaMensual || ''),
     fechaPago: new Date().toISOString().split('T')[0],
     plan: 'Pase libre',
   });
@@ -32,11 +32,17 @@ export default function Pagos() {
   const [newClient, setNewClient] = useState(emptyNewClient);
   const [newPago, setNewPago] = useState({
     modalidadPago: 'Efectivo' as Payment['modalidadPago'],
-    monto: String(settings.cuotaMensual || ''),
+    monto: String(getSettingsSync().cuotaMensual || ''),
     fechaPago: new Date().toISOString().split('T')[0],
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
   });
+
+  const refresh = async () => {
+    const [ps, cs, s] = await Promise.all([getPayments(), getClients(), getSettings()]);
+    setPayments(ps); setClients(cs); setSettings(s);
+  };
+  useEffect(() => { refresh(); }, []);
 
   const selectedClient = clients.find(c => c.id === form.clientId);
   const clientResults = useMemo(() => {
@@ -45,32 +51,32 @@ export default function Pagos() {
     return clients.filter(c => `${c.nombre} ${c.apellido}`.toLowerCase().includes(q)).slice(0, 8);
   }, [clientSearch, clients]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClient || !form.monto) return;
-    savePayment({
+    await savePayment({
       ...form,
       monto: Number(form.monto),
       clientName: `${selectedClient.apellido} ${selectedClient.nombre}`,
     });
-    setPayments(getPayments());
+    await refresh();
     setForm(f => ({ ...f, clientId: '', monto: String(settings.cuotaMensual || '') }));
     setClientSearch('');
   };
 
-  const handleNewClient = (e: React.FormEvent) => {
+  const handleNewClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClient.nombre || !newClient.apellido || !newPago.monto) return;
     const edad = newClient.fechaNacimiento
       ? Math.floor((Date.now() - new Date(newClient.fechaNacimiento).getTime()) / 31557600000)
       : undefined;
-    const created = saveClient({
+    const created = await saveClient({
       ...newClient,
       estado: 'activo',
       fechaIngreso: new Date().toISOString().split('T')[0],
       edad,
     });
-    savePayment({
+    await savePayment({
       clientId: created.id,
       clientName: `${created.apellido} ${created.nombre}`,
       plan: created.plan || 'Pase libre',
@@ -80,8 +86,7 @@ export default function Pagos() {
       mes: newPago.mes,
       anio: newPago.anio,
     });
-    setClients(getClients());
-    setPayments(getPayments());
+    await refresh();
     setNewClient(emptyNewClient);
     setNewPago({
       modalidadPago: 'Efectivo',

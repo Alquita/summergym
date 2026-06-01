@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, CreditCard, DollarSign, Menu, X, Settings as SettingsIcon } from "lucide-react";
-import { useState } from "react";
-import { Notification } from "../lib/types";
-import { getSettings } from "../lib/store";
+import { useEffect, useState } from "react";
+import { Notification, Settings } from "../lib/types";
+import { getSettings, getSettingsSync } from "../lib/store";
 import NotificationPanel from "./NotificationPanel";
 import logo from "@/assets/summergym.jpg";
 
@@ -21,7 +21,8 @@ interface NavbarProps {
 export default function Navbar({ notifications }: NavbarProps) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const settings = getSettings();
+  const [settings, setSettings] = useState<Settings>(getSettingsSync());
+  useEffect(() => { getSettings().then(setSettings); }, [location.pathname]);
 
   return (
     <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-2xl border-b border-border/40 px-4 lg:px-8 shadow-lg shadow-background/40">

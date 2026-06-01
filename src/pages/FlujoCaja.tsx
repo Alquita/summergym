@@ -1,11 +1,15 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Plus, X, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { getCashFlow, saveCashFlowEntry } from "../lib/store";
+import { CashFlowEntry } from "../lib/types";
 
 export default function FlujoCaja() {
-  const [entries, setEntries] = useState(getCashFlow);
+  const [entries, setEntries] = useState<CashFlowEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ fecha: new Date().toISOString().split('T')[0], detalle: '', ingreso: '', egreso: '', tipo: 'ingreso_cliente' as const, observaciones: '' });
+
+  const refresh = async () => setEntries(await getCashFlow());
+  useEffect(() => { refresh(); }, []);
 
   const totals = useMemo(() => {
     const ingresos = entries.reduce((s, e) => s + e.ingreso, 0);
@@ -13,10 +17,10 @@ export default function FlujoCaja() {
     return { ingresos, egresos, disponible: ingresos - egresos };
   }, [entries]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    saveCashFlowEntry({ ...form, ingreso: Number(form.ingreso) || 0, egreso: Number(form.egreso) || 0, tipo: form.tipo as any });
-    setEntries(getCashFlow());
+    await saveCashFlowEntry({ ...form, ingreso: Number(form.ingreso) || 0, egreso: Number(form.egreso) || 0, tipo: form.tipo as any });
+    await refresh();
     setShowForm(false);
     setForm({ fecha: new Date().toISOString().split('T')[0], detalle: '', ingreso: '', egreso: '', tipo: 'ingreso_cliente', observaciones: '' });
   };

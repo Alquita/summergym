@@ -1,32 +1,36 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Settings as SettingsIcon, BarChart3, Building2, DollarSign, Upload, Download, Save, Users, TrendingUp, Bell, Lightbulb } from "lucide-react";
 import { getSettings, saveSettings, getClients, getPayments, exportAllData, importAllData } from "../lib/store";
+import { Settings } from "../lib/types";
 import { toast } from "sonner";
 
+const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', cuotaMensual: 35000, diasAlerta: 5, diasInactividad: 35 };
+
 export default function Configuracion() {
-  const [settings, setSettings] = useState(getSettings);
+  const [settings, setSettings] = useState<Settings>(DEFAULTS);
+  const [stats, setStats] = useState({ total: 0, activos: 0, ingresosMes: 0, estimado: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const stats = useMemo(() => {
-    const clients = getClients();
-    const payments = getPayments();
-    const activos = clients.filter(c => c.estado === 'activo').length;
-    const currentMonth = new Date().toLocaleString('es-AR', { month: 'long' });
-    const currentYear = new Date().getFullYear();
-    const ingresosMes = payments
-      .filter(p => new Date(p.fechaPago).getFullYear() === currentYear && new Date(p.fechaPago).getMonth() === new Date().getMonth())
-      .reduce((s, p) => s + p.monto, 0);
-    const estimado = activos * settings.cuotaMensual;
-    return { total: clients.length, activos, ingresosMes, estimado, currentMonth };
+  useEffect(() => { getSettings().then(setSettings); }, []);
+
+  useEffect(() => {
+    (async () => {
+      const [clients, payments] = await Promise.all([getClients(), getPayments()]);
+      const activos = clients.filter(c => c.estado === 'activo').length;
+      const ingresosMes = payments
+        .filter(p => new Date(p.fechaPago).getFullYear() === new Date().getFullYear() && new Date(p.fechaPago).getMonth() === new Date().getMonth())
+        .reduce((s, p) => s + p.monto, 0);
+      setStats({ total: clients.length, activos, ingresosMes, estimado: activos * settings.cuotaMensual });
+    })();
   }, [settings.cuotaMensual]);
 
-  const handleSave = () => {
-    saveSettings(settings);
+  const handleSave = async () => {
+    await saveSettings(settings);
     toast.success("Configuración guardada");
   };
 
-  const handleExport = () => {
-    const json = exportAllData();
+  const handleExport = async () => {
+    const json = await exportAllData();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -45,9 +49,9 @@ export default function Configuracion() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       try {
-        importAllData(ev.target?.result as string);
+        await importAllData(ev.target?.result as string);
         toast.success("Datos importados. Recargando...");
         setTimeout(() => window.location.reload(), 800);
       } catch {

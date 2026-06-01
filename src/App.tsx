@@ -12,20 +12,25 @@ import FlujoCaja from "./pages/FlujoCaja";
 import Configuracion from "./pages/Configuracion";
 
 import NotFound from "./pages/NotFound";
-import { syncClientStatuses } from "./lib/store";
-import { Notification } from "./lib/types";
-import { Client } from "./lib/types";
+import { syncClientStatuses, seedIfEmpty, getSettings } from "./lib/store";
+import { Notification, Client } from "./lib/types";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const { updatedClients, notifications: notifs } = syncClientStatuses();
-    setClients(updatedClients);
-    setNotifications(notifs);
+    (async () => {
+      await seedIfEmpty();
+      await getSettings();
+      const { updatedClients, notifications: notifs } = await syncClientStatuses();
+      setClients(updatedClients);
+      setNotifications(notifs);
+      setReady(true);
+    })();
   }, []);
 
   return (
@@ -37,15 +42,18 @@ const App = () => {
           <div className="min-h-screen bg-background">
             <Navbar notifications={notifications} />
             <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-              <Routes>
-                <Route path="/" element={<Dashboard clients={clients} notifications={notifications} />} />
-                <Route path="/clientes" element={<Clientes />} />
-                <Route path="/pagos" element={<Pagos />} />
-                <Route path="/caja" element={<FlujoCaja />} />
-                <Route path="/configuracion" element={<Configuracion />} />
-                <Route path="*" element={<NotFound />} />
-
-              </Routes>
+              {!ready ? (
+                <div className="flex items-center justify-center py-20 text-muted-foreground">Cargando datos...</div>
+              ) : (
+                <Routes>
+                  <Route path="/" element={<Dashboard clients={clients} notifications={notifications} />} />
+                  <Route path="/clientes" element={<Clientes />} />
+                  <Route path="/pagos" element={<Pagos />} />
+                  <Route path="/caja" element={<FlujoCaja />} />
+                  <Route path="/configuracion" element={<Configuracion />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              )}
             </main>
           </div>
         </BrowserRouter>

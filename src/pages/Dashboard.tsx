@@ -1,18 +1,23 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock, Flame } from "lucide-react";
 import StatCard from "../components/StatCard";
-import { Notification } from "../lib/types";
-import { getPayments, getSettings } from "../lib/store";
+import { Notification, Client, Payment, Settings } from "../lib/types";
+import { getPayments, getSettings, getSettingsSync } from "../lib/store";
 import gymLogo from "@/assets/summergym.jpg";
 
 interface DashboardProps {
-  clients: ReturnType<typeof import('../lib/store').getClients>;
+  clients: Client[];
   notifications: Notification[];
 }
 
 export default function Dashboard({ clients, notifications }: DashboardProps) {
-  const payments = useMemo(() => getPayments(), []);
-  const settings = getSettings();
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [settings, setSettings] = useState<Settings>(getSettingsSync());
+
+  useEffect(() => {
+    getPayments().then(setPayments);
+    getSettings().then(setSettings);
+  }, []);
 
   const activos = clients.filter(c => c.estado === 'activo').length;
   const inactivos = clients.filter(c => c.estado === 'inactivo').length;

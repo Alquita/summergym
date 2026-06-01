@@ -1,18 +1,25 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Plus, Search, Phone, MapPin, Edit2, Trash2, X, User, Calendar, AlertCircle, CheckCircle2, Power, Home, PhoneCall } from "lucide-react";
 import { getClients, getPayments, saveClient, updateClient, deleteClient } from "../lib/store";
-import { Client } from "../lib/types";
+import { Client, Payment } from "../lib/types";
 
 const emptyForm = { nombre: '', apellido: '', fechaNacimiento: '', direccion: '', telefono: '', telefonoEmergencia: '', plan: 'Pase libre', observaciones: '' };
 
 export default function Clientes() {
-  const [clients, setClients] = useState(getClients);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [viewingId, setViewingId] = useState<string | null>(null);
+
+  const refresh = async () => {
+    const [cs, ps] = await Promise.all([getClients(), getPayments()]);
+    setClients(cs); setPayments(ps);
+  };
+  useEffect(() => { refresh(); }, []);
 
   const filtered = useMemo(() =>
     clients.filter(c => {
@@ -28,28 +35,28 @@ export default function Clientes() {
 
   const paymentStatus = useMemo(() => {
     if (!viewingClient) return null;
-    const payments = getPayments()
+    const ps = payments
       .filter(p => p.clientId === viewingClient.id)
       .sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
-    if (payments.length === 0) return { kind: 'none' as const };
-    const last = new Date(payments[0].fechaPago);
+    if (ps.length === 0) return { kind: 'none' as const };
+    const last = new Date(ps[0].fechaPago);
     const days = Math.floor((Date.now() - last.getTime()) / 86400000);
     if (days > 35) return { kind: 'vencido' as const, days: days - 30, last };
     if (days >= 25) return { kind: 'por_vencer' as const, days: 35 - days, last };
     return { kind: 'al_dia' as const, days: 30 - days, last };
-  }, [viewingClient]);
+  }, [viewingClient, payments]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingId) {
       const existing = clients.find(c => c.id === editingId)!;
       const client: Client = { ...form, id: editingId, estado: existing.estado, fechaIngreso: existing.fechaIngreso, edad: form.fechaNacimiento ? Math.floor((Date.now() - new Date(form.fechaNacimiento).getTime()) / 31557600000) : undefined };
-      updateClient(client);
+      await updateClient(client);
     } else {
       const edad = form.fechaNacimiento ? Math.floor((Date.now() - new Date(form.fechaNacimiento).getTime()) / 31557600000) : undefined;
-      saveClient({ ...form, estado: 'activo', fechaIngreso: new Date().toISOString().split('T')[0], edad });
+      await saveClient({ ...form, estado: 'activo', fechaIngreso: new Date().toISOString().split('T')[0], edad });
     }
-    setClients(getClients());
+    await refresh();
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm);
@@ -62,17 +69,17 @@ export default function Clientes() {
     setViewingId(null);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('¿Estás seguro de eliminar este cliente?')) {
-      deleteClient(id);
-      setClients(getClients());
+      await deleteClient(id);
+      await refresh();
       setViewingId(null);
     }
   };
 
-  const toggleEstado = (c: Client) => {
-    updateClient({ ...c, estado: c.estado === 'activo' ? 'inactivo' : 'activo' });
-    setClients(getClients());
+  const toggleEstado = async (c: Client) => {
+    await updateClient({ ...c, estado: c.estado === 'activo' ? 'inactivo' : 'activo' });
+    await refresh();
   };
 
   return (

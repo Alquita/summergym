@@ -8,12 +8,16 @@ export default function FlujoCaja() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ fecha: new Date().toISOString().split('T')[0], detalle: '', ingreso: '', egreso: '', tipo: 'ingreso_cliente' as const, observaciones: '' });
 
-  const refresh = async () => setEntries(await getCashFlow());
+  const refresh = async () => {
+    const data = await getCashFlow();
+    setEntries(Array.isArray(data) ? data : []);
+  };
   useEffect(() => { refresh(); }, []);
 
   const totals = useMemo(() => {
-    const ingresos = entries.reduce((s, e) => s + e.ingreso, 0);
-    const egresos = entries.reduce((s, e) => s + e.egreso, 0);
+    const list = Array.isArray(entries) ? entries : [];
+    const ingresos = list.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
+    const egresos = list.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
     return { ingresos, egresos, disponible: ingresos - egresos };
   }, [entries]);
 

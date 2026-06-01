@@ -14,7 +14,162 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clientes: {
+        Row: {
+          apellido: string
+          created_at: string
+          direccion: string | null
+          edad: number | null
+          estado: string
+          fecha_ingreso: string
+          fecha_nacimiento: string | null
+          id: string
+          nombre: string
+          observaciones: string | null
+          plan: string | null
+          telefono: string | null
+          telefono_emergencia: string | null
+        }
+        Insert: {
+          apellido: string
+          created_at?: string
+          direccion?: string | null
+          edad?: number | null
+          estado?: string
+          fecha_ingreso?: string
+          fecha_nacimiento?: string | null
+          id?: string
+          nombre: string
+          observaciones?: string | null
+          plan?: string | null
+          telefono?: string | null
+          telefono_emergencia?: string | null
+        }
+        Update: {
+          apellido?: string
+          created_at?: string
+          direccion?: string | null
+          edad?: number | null
+          estado?: string
+          fecha_ingreso?: string
+          fecha_nacimiento?: string | null
+          id?: string
+          nombre?: string
+          observaciones?: string | null
+          plan?: string | null
+          telefono?: string | null
+          telefono_emergencia?: string | null
+        }
+        Relationships: []
+      }
+      configuracion: {
+        Row: {
+          cuota_mensual: number
+          dias_alerta: number
+          dias_inactividad: number
+          direccion: string
+          gym_name: string
+          id: number
+          telefono: string
+          updated_at: string
+        }
+        Insert: {
+          cuota_mensual?: number
+          dias_alerta?: number
+          dias_inactividad?: number
+          direccion?: string
+          gym_name?: string
+          id?: number
+          telefono?: string
+          updated_at?: string
+        }
+        Update: {
+          cuota_mensual?: number
+          dias_alerta?: number
+          dias_inactividad?: number
+          direccion?: string
+          gym_name?: string
+          id?: number
+          telefono?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      flujo_caja: {
+        Row: {
+          created_at: string
+          detalle: string
+          egreso: number
+          fecha: string
+          id: string
+          ingreso: number
+          observaciones: string | null
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          detalle: string
+          egreso?: number
+          fecha: string
+          id?: string
+          ingreso?: number
+          observaciones?: string | null
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          detalle?: string
+          egreso?: number
+          fecha?: string
+          id?: string
+          ingreso?: number
+          observaciones?: string | null
+          tipo?: string
+        }
+        Relationships: []
+      }
+      pagos: {
+        Row: {
+          anio: number
+          client_id: string
+          client_name: string
+          created_at: string
+          fecha_pago: string
+          id: string
+          mes: string
+          modalidad_pago: string
+          monto: number
+          observaciones: string | null
+          plan: string | null
+        }
+        Insert: {
+          anio: number
+          client_id: string
+          client_name: string
+          created_at?: string
+          fecha_pago: string
+          id?: string
+          mes: string
+          modalidad_pago: string
+          monto: number
+          observaciones?: string | null
+          plan?: string | null
+        }
+        Update: {
+          anio?: number
+          client_id?: string
+          client_name?: string
+          created_at?: string
+          fecha_pago?: string
+          id?: string
+          mes?: string
+          modalidad_pago?: string
+          monto?: number
+          observaciones?: string | null
+          plan?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

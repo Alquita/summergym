@@ -232,46 +232,78 @@ export default function Clientes() {
 
       {/* Modal Form */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-semibold text-lg">{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
-              <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              {[
-                { key: 'nombre', label: 'Nombre', required: true },
-                { key: 'apellido', label: 'Apellido', required: true },
-                { key: 'fechaNacimiento', label: 'Fecha de Nacimiento', type: 'date' },
-                { key: 'direccion', label: 'Dirección' },
-                { key: 'telefono', label: 'Teléfono' },
-                { key: 'telefonoEmergencia', label: 'Teléfono Emergencia (opcional)' },
-              ].map(f => (
-                <div key={f.key}>
-                  <label className="text-xs text-muted-foreground font-medium">{f.label}</label>
-                  <input value={(form as any)[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                    type={f.type || 'text'} required={f.required}
-                    className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowForm(false)}>
+          <div className="glass-card w-full max-w-lg max-h-[92vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="relative p-6 pb-5 border-b border-border/40 bg-gradient-to-br from-primary/15 via-accent/5 to-transparent">
+              <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-secondary text-muted-foreground transition-colors"><X className="w-5 h-5" /></button>
+              <div className="flex items-center gap-3 pr-10">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground shrink-0 shadow-lg shadow-primary/30">
+                  <User className="w-6 h-6" />
                 </div>
-              ))}
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Plan</label>
-                <select value={form.plan} onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  <option>Pase libre</option>
-                  <option>3 x s</option>
-                  <option>2 x s</option>
-                  <option>2 dias</option>
-                </select>
+                <div>
+                  <h2 className="font-heading font-bold text-xl gradient-text">{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">{editingId ? 'Actualizá la información del cliente' : 'Completá los datos para registrarlo'}</p>
+                </div>
               </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium">Observaciones</label>
-                <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" rows={2} />
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Personal */}
+              <div className="space-y-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
+                  <span className="h-px flex-1 bg-border/40" />Datos personales<span className="h-px flex-1 bg-border/40" />
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormInput icon={<User className="w-4 h-4" />} label="Nombre" required value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} />
+                  <FormInput icon={<User className="w-4 h-4" />} label="Apellido" required value={form.apellido} onChange={v => setForm(p => ({ ...p, apellido: v }))} />
+                </div>
+                <FormInput icon={<Calendar className="w-4 h-4" />} label="Fecha de Nacimiento" type="date" value={form.fechaNacimiento} onChange={v => setForm(p => ({ ...p, fechaNacimiento: v }))} />
+                <FormInput icon={<Home className="w-4 h-4" />} label="Dirección" value={form.direccion} onChange={v => setForm(p => ({ ...p, direccion: v }))} />
               </div>
-              <button type="submit" className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity mt-2">
-                {editingId ? 'Guardar Cambios' : 'Registrar Cliente'}
-              </button>
+
+              {/* Contact */}
+              <div className="space-y-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
+                  <span className="h-px flex-1 bg-border/40" />Contacto<span className="h-px flex-1 bg-border/40" />
+                </p>
+                <FormInput icon={<Phone className="w-4 h-4" />} label="Teléfono" value={form.telefono} onChange={v => setForm(p => ({ ...p, telefono: v }))} />
+                <FormInput icon={<PhoneCall className="w-4 h-4" />} label="Teléfono Emergencia (opcional)" value={form.telefonoEmergencia} onChange={v => setForm(p => ({ ...p, telefonoEmergencia: v }))} />
+              </div>
+
+              {/* Plan & notes */}
+              <div className="space-y-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
+                  <span className="h-px flex-1 bg-border/40" />Plan y notas<span className="h-px flex-1 bg-border/40" />
+                </p>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium ml-1">Plan</label>
+                  <div className="grid grid-cols-4 gap-2 mt-1.5">
+                    {['Pase libre', '3 x s', '2 x s', '2 dias'].map(p => (
+                      <button type="button" key={p} onClick={() => setForm(prev => ({ ...prev, plan: p }))}
+                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-all ${form.plan === p ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-md shadow-primary/30 scale-[1.02]' : 'bg-input border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium ml-1">Observaciones</label>
+                  <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}
+                    placeholder="Lesiones, objetivos, preferencias..."
+                    className="w-full mt-1.5 px-3 py-2.5 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all resize-none" rows={3} />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setShowForm(false)}
+                  className="px-4 py-2.5 rounded-lg font-medium text-sm bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" className="flex-1 bg-gradient-to-r from-primary to-accent text-primary-foreground py-2.5 rounded-lg font-semibold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.01] active:scale-[0.99] transition-all">
+                  {editingId ? '✓ Guardar Cambios' : '+ Registrar Cliente'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -323,3 +323,16 @@ function InfoField({ icon, label, value }: { icon: React.ReactNode; label: strin
     </div>
   );
 }
+
+function FormInput({ icon, label, value, onChange, type = 'text', required }: { icon: React.ReactNode; label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean }) {
+  return (
+    <div>
+      <label className="text-xs text-muted-foreground font-medium ml-1">{label}{required && <span className="text-primary ml-0.5">*</span>}</label>
+      <div className="relative mt-1.5 group">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none">{icon}</span>
+        <input value={value} onChange={e => onChange(e.target.value)} type={type} required={required}
+          className="w-full pl-10 pr-3 py-2.5 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+      </div>
+    </div>
+  );
+}

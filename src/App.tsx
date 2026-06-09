@@ -16,8 +16,6 @@ import Configuracion from "./pages/Configuracion";
 import NotFound from "./pages/NotFound";
 import { syncClientStatuses, seedIfEmpty, getSettings } from "./lib/store";
 import { Notification, Client } from "./lib/types";
-import { playNotifSound, unlockAudio } from "./lib/sound";
-
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -40,7 +38,6 @@ const App = () => {
     if (!ready) return;
     notifications.forEach((n, i) => {
       setTimeout(() => {
-        if (n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer') playNotifSound();
         toast.custom(
           (t) => {
             let config: { icon: typeof AlertTriangle; color: string; bg: string; border: string };
@@ -66,13 +63,6 @@ const App = () => {
       }, (i + 1) * 1200);
     });
   }, [ready]);
-
-  // Desbloquea audio al primer toque del usuario
-  useEffect(() => {
-    const unlock = () => { unlockAudio(); document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
-    document.addEventListener('click', unlock);
-    document.addEventListener('touchstart', unlock);
-  }, []);
 
   // SW update detection — recarga automática cuando hay nueva versión
   useEffect(() => {

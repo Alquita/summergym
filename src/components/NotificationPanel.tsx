@@ -1,6 +1,7 @@
 import { Bell, X, AlertTriangle, Clock, Cake } from "lucide-react";
 import { useState } from "react";
 import { Notification } from "../lib/types";
+import { playNotifSound } from "../lib/sound";
 
 interface NotificationPanelProps {
   notifications: Notification[];
@@ -22,7 +23,7 @@ export default function NotificationPanel({ notifications }: NotificationPanelPr
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => { setOpen(!open); if (!open && visible.some(n => n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer')) playNotifSound(); }}
         className="relative p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
       >
         <Bell className="w-5 h-5" />

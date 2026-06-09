@@ -1,5 +1,5 @@
 import { Bell, X, AlertTriangle, Clock, Cake } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Notification } from "../lib/types";
 import { playNotifSound } from "../lib/sound";
 
@@ -16,6 +16,7 @@ const typeConfig = {
 export default function NotificationPanel({ notifications }: NotificationPanelProps) {
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const soundPlayed = useRef(false);
 
   const visible = notifications.filter(n => !dismissed.has(n.id));
   const urgentCount = visible.filter(n => n.type === 'cuota_vencida').length;
@@ -23,7 +24,7 @@ export default function NotificationPanel({ notifications }: NotificationPanelPr
   return (
     <div className="relative">
       <button
-        onClick={() => { setOpen(!open); if (!open && visible.some(n => n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer')) playNotifSound(); }}
+        onClick={() => { setOpen(!open); if (!open && !soundPlayed.current && visible.some(n => n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer')) { playNotifSound(); soundPlayed.current = true; } }}
         className="relative p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
       >
         <Bell className="w-5 h-5" />

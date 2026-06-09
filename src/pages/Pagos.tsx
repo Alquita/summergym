@@ -65,7 +65,8 @@ export default function Pagos() {
       await updateClient({ ...selectedClient, plan: form.plan });
     }
     await refresh();
-    setForm(f => ({ ...f, clientId: '', monto: String(planPrice(f.plan || 'Pase libre', settings)) }));
+    const n = new Date();
+    setForm(f => ({ ...f, clientId: '', monto: String(planPrice(f.plan || 'Pase libre', settings)), mes: meses[n.getMonth()], anio: n.getFullYear() }));
     setClientSearch('');
   };
 
@@ -200,7 +201,7 @@ export default function Pagos() {
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
                 <div className="relative">
-                  <DatePicker date={toDate(form.fechaPago)} onDateChange={d => setForm(p => ({ ...p, fechaPago: fromDate(d) }))} placeholder="Seleccionar fecha" />
+                  <DatePicker date={toDate(form.fechaPago)} onDateChange={d => { const date = fromDate(d); const dt = new Date(date + 'T12:00:00'); setForm(p => ({ ...p, fechaPago: date, mes: meses[dt.getMonth()], anio: dt.getFullYear() })); }} placeholder="Seleccionar fecha" />
                 </div>
               </div>
               <div>
@@ -211,18 +212,6 @@ export default function Pagos() {
                     placeholder="35000"
                     className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Mes</label>
-                <select value={form.mes} onChange={e => setForm(p => ({ ...p, mes: e.target.value }))}
-                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  {meses.map(m => <option key={m}>{m}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Año</label>
-                <input type="number" value={form.anio} onChange={e => setForm(p => ({ ...p, anio: Number(e.target.value) }))}
-                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
               </div>
             </div>
 
@@ -314,7 +303,7 @@ export default function Pagos() {
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
                 <div className="relative">
-                  <DatePicker date={toDate(newPago.fechaPago)} onDateChange={d => setNewPago(p => ({ ...p, fechaPago: fromDate(d) }))} placeholder="Seleccionar fecha" />
+                  <DatePicker date={toDate(newPago.fechaPago)} onDateChange={d => { const date = fromDate(d); const dt = new Date(date + 'T12:00:00'); setNewPago(p => ({ ...p, fechaPago: date, mes: meses[dt.getMonth()], anio: dt.getFullYear() })); }} placeholder="Seleccionar fecha" />
                 </div>
               </div>
               <div>
@@ -325,18 +314,6 @@ export default function Pagos() {
                     placeholder="35000"
                     className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Mes</label>
-                <select value={newPago.mes} onChange={e => setNewPago(p => ({ ...p, mes: e.target.value }))}
-                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  {meses.map(m => <option key={m}>{m}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Año</label>
-                <input type="number" value={newPago.anio} onChange={e => setNewPago(p => ({ ...p, anio: Number(e.target.value) }))}
-                  className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
               </div>
             </div>
             <div className="mt-4">

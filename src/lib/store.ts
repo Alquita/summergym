@@ -186,6 +186,9 @@ export async function saveCashFlowEntry(e: Omit<CashFlowEntry, 'id'>): Promise<C
 export async function deleteCashFlowEntry(id: string): Promise<void> {
   await supabase.from('flujo_caja').delete().eq('id', id);
 }
+export async function updateCashFlowEntry(e: CashFlowEntry): Promise<void> {
+  await supabase.from('flujo_caja').update(cashToRow(e)).eq('id', e.id);
+}
 
 // ============ Sync statuses & notifications ============
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }

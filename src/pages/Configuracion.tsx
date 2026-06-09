@@ -37,7 +37,9 @@ export default function Configuracion() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `${settings.gymName.replace(/\s+/g, '_').toLowerCase()}_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success("Datos exportados");
   };

@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Search, Phone, MapPin, Edit2, Trash2, X, User, Calendar, AlertCircle, CheckCircle2, Power, Home, PhoneCall } from "lucide-react";
+import { DatePicker } from "../components/ui/date-picker";
+import { toDate, fromDate } from "../lib/date-utils";
 import { getClients, getPayments, saveClient, updateClient, deleteClient } from "../lib/store";
 import { Client, Payment } from "../lib/types";
 
@@ -258,7 +260,12 @@ export default function Clientes() {
                   <FormInput icon={<User className="w-4 h-4" />} label="Nombre" required value={form.nombre} onChange={v => setForm(p => ({ ...p, nombre: v }))} />
                   <FormInput icon={<User className="w-4 h-4" />} label="Apellido" required value={form.apellido} onChange={v => setForm(p => ({ ...p, apellido: v }))} />
                 </div>
-                <FormInput icon={<Calendar className="w-4 h-4" />} label="Fecha de Nacimiento" type="date" value={form.fechaNacimiento} onChange={v => setForm(p => ({ ...p, fechaNacimiento: v }))} />
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium ml-1">Fecha de Nacimiento</label>
+                  <div className="mt-1.5">
+                    <DatePicker date={toDate(form.fechaNacimiento)} onDateChange={d => setForm(p => ({ ...p, fechaNacimiento: fromDate(d) }))} placeholder="Seleccionar fecha" />
+                  </div>
+                </div>
                 <FormInput icon={<Home className="w-4 h-4" />} label="Dirección" value={form.direccion} onChange={v => setForm(p => ({ ...p, direccion: v }))} />
               </div>
 

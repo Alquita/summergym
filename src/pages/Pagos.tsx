@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import { CreditCard, UserPlus, Search, Check, X, CalendarDays, DollarSign, CheckCircle2, User } from "lucide-react";
+import { CreditCard, UserPlus, Search, Check, X, DollarSign, CheckCircle2, User } from "lucide-react";
+import { DatePicker } from "../components/ui/date-picker";
+import { toDate, fromDate } from "../lib/date-utils";
 import { getPayments, savePayment, getClients, saveClient, getSettings, getSettingsSync } from "../lib/store";
 import { Payment, Client, Settings } from "../lib/types";
 
@@ -177,9 +179,7 @@ export default function Pagos() {
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
                 <div className="relative">
-                  <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                  <input type="date" value={form.fechaPago} onChange={e => setForm(p => ({ ...p, fechaPago: e.target.value }))}
-                    className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  <DatePicker date={toDate(form.fechaPago)} onDateChange={d => setForm(p => ({ ...p, fechaPago: fromDate(d) }))} placeholder="Seleccionar fecha" />
                 </div>
               </div>
               <div>
@@ -253,7 +253,6 @@ export default function Pagos() {
               {[
                 { key: 'nombre', label: 'Nombre *', required: true },
                 { key: 'apellido', label: 'Apellido *', required: true },
-                { key: 'fechaNacimiento', label: 'Fecha de Nacimiento', type: 'date' },
                 { key: 'telefono', label: 'Teléfono' },
                 { key: 'direccion', label: 'Dirección' },
                 { key: 'telefonoEmergencia', label: 'Tel. Emergencia' },
@@ -266,6 +265,10 @@ export default function Pagos() {
                     className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
               ))}
+              <div>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Nacimiento</label>
+                <DatePicker date={toDate(newClient.fechaNacimiento)} onDateChange={d => setNewClient(p => ({ ...p, fechaNacimiento: fromDate(d) }))} placeholder="Seleccionar fecha" />
+              </div>
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Plan</label>
                 <select value={newClient.plan} onChange={e => setNewClient(p => ({ ...p, plan: e.target.value }))}
@@ -290,9 +293,7 @@ export default function Pagos() {
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
                 <div className="relative">
-                  <CalendarDays className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                  <input type="date" value={newPago.fechaPago} onChange={e => setNewPago(p => ({ ...p, fechaPago: e.target.value }))}
-                    className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  <DatePicker date={toDate(newPago.fechaPago)} onDateChange={d => setNewPago(p => ({ ...p, fechaPago: fromDate(d) }))} placeholder="Seleccionar fecha" />
                 </div>
               </div>
               <div>

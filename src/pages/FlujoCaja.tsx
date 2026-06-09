@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Plus, X, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { DatePicker } from "../components/ui/date-picker";
+import { toDate, fromDate } from "../lib/date-utils";
 import { getCashFlow, saveCashFlowEntry } from "../lib/store";
 import { CashFlowEntry } from "../lib/types";
 
@@ -104,8 +106,9 @@ export default function FlujoCaja() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="text-xs text-muted-foreground font-medium">Fecha</label>
-                <input type="date" value={form.fecha} onChange={e => setForm(p => ({ ...p, fecha: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-input border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                <div className="mt-1">
+                  <DatePicker date={toDate(form.fecha)} onDateChange={d => setForm(p => ({ ...p, fecha: fromDate(d) }))} placeholder="Seleccionar fecha" />
+                </div>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground font-medium">Detalle</label>

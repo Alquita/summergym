@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, CreditCard, DollarSign, Menu, X, Settings as SettingsIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Notification, Settings } from "../lib/types";
@@ -20,6 +20,7 @@ interface NavbarProps {
 
 export default function Navbar({ notifications }: NavbarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState<Settings>(getSettingsSync());
   useEffect(() => { getSettings().then(setSettings); }, [location.pathname]);
@@ -58,11 +59,11 @@ export default function Navbar({ notifications }: NavbarProps) {
 
         <div className="flex items-center gap-1">
           <NotificationPanel notifications={notifications} />
-          <Link to="/configuracion"
+          <button onClick={() => navigate(location.pathname === '/configuracion' ? '/' : '/configuracion')}
             className={`p-2 rounded-lg transition-colors ${location.pathname === '/configuracion' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
             title="Configuración">
             <SettingsIcon className="w-5 h-5" />
-          </Link>
+          </button>
           <button className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors" onClick={() => setOpen(!open)}>
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

@@ -25,14 +25,12 @@ export default function Navbar({ notifications }: NavbarProps) {
   useEffect(() => { getSettings().then(setSettings); }, [location.pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-2xl border-b border-border/40 px-4 lg:px-8 shadow-lg shadow-background/40">
-      <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+    <nav className="sticky top-0 z-50 bg-card border-b border-border px-4 lg:px-8">
       <div className="flex items-center justify-between h-16 max-w-7xl mx-auto">
-        <Link to="/" className="flex items-center gap-3 group">
-          <img src={logo} alt="Summer Gym" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow" />
+        <Link to="/" className="flex items-center gap-3">
+          <img src={logo} alt="Summer Gym" className="w-9 h-9 rounded-lg object-cover" />
           <div className="hidden sm:block">
-            <span className="font-heading font-bold text-lg tracking-tight block leading-tight">{settings.gymName}</span>
-            <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Management</span>
+            <span className="font-heading font-semibold text-base">{settings.gymName}</span>
           </div>
         </Link>
 
@@ -45,10 +43,10 @@ export default function Navbar({ notifications }: NavbarProps) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   active
-                    ? "text-primary-foreground bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/40"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:-translate-y-0.5"
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -58,12 +56,12 @@ export default function Navbar({ notifications }: NavbarProps) {
           })}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <NotificationPanel notifications={notifications} />
           <Link to="/configuracion"
-            className={`p-2 rounded-lg transition-colors ${location.pathname === '/configuracion' ? 'text-primary bg-primary/15' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
+            className={`p-2 rounded-lg transition-colors ${location.pathname === '/configuracion' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
             title="Configuración">
-            <SettingsIcon className={`w-5 h-5 ${location.pathname === '/configuracion' ? 'animate-[spin_3s_linear_infinite]' : ''}`} />
+            <SettingsIcon className="w-5 h-5" />
           </Link>
           <button className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors" onClick={() => setOpen(!open)}>
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -135,15 +135,15 @@ export default function Clientes() {
       {viewingClient && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewingId(null)}>
           <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
-            {/* Header with gradient */}
-            <div className="relative p-6 pb-5 border-b border-border/40 bg-gradient-to-br from-primary/10 via-transparent to-accent/5">
+            {/* Header */}
+            <div className="relative p-6 pb-5 border-b border-border/40">
               <button onClick={() => setViewingId(null)} className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-secondary text-muted-foreground"><X className="w-5 h-5" /></button>
               <div className="flex items-start gap-4 pr-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-heading font-bold text-xl shrink-0">
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-heading font-bold text-xl shrink-0">
                   {viewingClient.nombre[0]}{viewingClient.apellido[0]}
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-heading font-bold text-2xl gradient-text truncate">{viewingClient.nombre} {viewingClient.apellido}</h2>
+                  <h2 className="font-heading font-bold text-2xl truncate">{viewingClient.nombre} {viewingClient.apellido}</h2>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Cliente #{viewingIndex}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${viewingClient.estado === 'activo' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'}`}>
@@ -235,14 +235,14 @@ export default function Clientes() {
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowForm(false)}>
           <div className="glass-card w-full max-w-lg max-h-[92vh] overflow-y-auto relative" onClick={e => e.stopPropagation()}>
             {/* Header */}
-            <div className="relative p-6 pb-5 border-b border-border/40 bg-gradient-to-br from-primary/15 via-accent/5 to-transparent">
+            <div className="relative p-6 pb-5 border-b border-border/40">
               <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-secondary text-muted-foreground transition-colors"><X className="w-5 h-5" /></button>
               <div className="flex items-center gap-3 pr-10">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground shrink-0 shadow-lg shadow-primary/30">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                   <User className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-heading font-bold text-xl gradient-text">{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
+                  <h2 className="font-heading font-bold text-xl">{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">{editingId ? 'Actualizá la información del cliente' : 'Completá los datos para registrarlo'}</p>
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function Clientes() {
                   <div className="grid grid-cols-4 gap-2 mt-1.5">
                     {['Pase libre', '3 x s', '2 x s', '2 dias'].map(p => (
                       <button type="button" key={p} onClick={() => setForm(prev => ({ ...prev, plan: p }))}
-                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-all ${form.plan === p ? 'bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-md shadow-primary/30 scale-[1.02]' : 'bg-input border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>
+                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${form.plan === p ? 'bg-primary text-primary-foreground' : 'bg-input border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>
                         {p}
                       </button>
                     ))}
@@ -300,7 +300,7 @@ export default function Clientes() {
                   className="px-4 py-2.5 rounded-lg font-medium text-sm bg-secondary text-secondary-foreground hover:bg-secondary/70 transition-colors">
                   Cancelar
                 </button>
-                <button type="submit" className="flex-1 bg-gradient-to-r from-primary to-accent text-primary-foreground py-2.5 rounded-lg font-semibold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.01] active:scale-[0.99] transition-all">
+                <button type="submit" className="flex-1 bg-primary text-primary-foreground py-2.5 rounded-lg font-semibold text-sm hover:opacity-90 transition-opacity">
                   {editingId ? '✓ Guardar Cambios' : '+ Registrar Cliente'}
                 </button>
               </div>

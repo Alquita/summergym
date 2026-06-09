@@ -121,7 +121,7 @@ export default function Configuracion() {
 
       {/* Save */}
       <button onClick={handleSave}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground py-3.5 rounded-xl font-heading font-semibold text-base hover:opacity-90 transition-opacity shadow-[0_0_25px_-5px_hsl(var(--primary)/0.5)]">
+        className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
         <Save className="w-5 h-5" /> Guardar Configuración
       </button>
     </div>

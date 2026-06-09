@@ -52,7 +52,7 @@ export default function FlujoCaja() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowDownRight className="w-4 h-4 text-destructive" /> Egresos</div>
           <p className="text-2xl font-heading font-bold text-destructive mt-1">${totals.egresos.toLocaleString('es-AR')}</p>
         </div>
-        <div className="glass-card p-5 stat-glow">
+        <div className="glass-card p-5">
           <p className="text-sm text-muted-foreground">Disponible en Caja</p>
           <p className={`text-2xl font-heading font-bold mt-1 ${totals.disponible >= 0 ? 'text-success' : 'text-destructive'}`}>
             ${totals.disponible.toLocaleString('es-AR')}

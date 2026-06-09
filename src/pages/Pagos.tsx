@@ -212,9 +212,9 @@ export default function Pagos() {
                   const active = form.modalidadPago === m;
                   return (
                     <button key={m} type="button" onClick={() => setForm(p => ({ ...p, modalidadPago: m }))}
-                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                        active ? 'bg-primary/15 border-primary/50 text-primary shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
-                          : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-border/80'
+                      className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                        active ? 'bg-primary border-primary text-primary-foreground'
+                          : 'bg-input border-border text-muted-foreground hover:text-foreground'
                       }`}>
                       {m}
                     </button>
@@ -225,7 +225,7 @@ export default function Pagos() {
           </div>
 
           <button type="submit" disabled={!selectedClient || !form.monto}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3.5 rounded-xl font-heading font-semibold text-base hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_25px_-5px_hsl(var(--primary)/0.5)]">
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
             <CheckCircle2 className="w-5 h-5" /> Registrar Pago
           </button>
         </form>
@@ -324,9 +324,9 @@ export default function Pagos() {
                   const active = newPago.modalidadPago === m;
                   return (
                     <button key={m} type="button" onClick={() => setNewPago(p => ({ ...p, modalidadPago: m }))}
-                      className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-                        active ? 'bg-primary/15 border-primary/50 text-primary shadow-[0_0_15px_-3px_hsl(var(--primary)/0.4)]'
-                          : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-border/80'
+                      className={`px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+                        active ? 'bg-primary border-primary text-primary-foreground'
+                          : 'bg-input border-border text-muted-foreground hover:text-foreground'
                       }`}>
                       {m}
                     </button>
@@ -337,7 +337,7 @@ export default function Pagos() {
           </div>
 
           <button type="submit"
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent to-primary text-primary-foreground py-3.5 rounded-xl font-heading font-semibold text-base hover:opacity-90 transition-opacity shadow-[0_0_25px_-5px_hsl(var(--accent)/0.5)]">
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
             <CheckCircle2 className="w-5 h-5" /> Registrar Cliente y Pago
           </button>
         </form>

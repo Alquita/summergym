@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users, UserCheck, UserX, TrendingUp, AlertTriangle, Clock } from "lucide-react";
+import { Users, UserCheck, UserX, TrendingUp, DollarSign, UserPlus, CalendarDays, AlertTriangle, Clock } from "lucide-react";
 import StatCard from "../components/StatCard";
-import { Notification, Client, Payment, Settings } from "../lib/types";
-import { getPayments, getSettings, getSettingsSync } from "../lib/store";
+import { Notification, Client, Payment, CashFlowEntry, Settings } from "../lib/types";
+import { getPayments, getCashFlow, getSettings, getSettingsSync } from "../lib/store";
 import gymLogo from "@/assets/summergym.jpg";
 
 interface DashboardProps {
@@ -12,16 +12,40 @@ interface DashboardProps {
 
 export default function Dashboard({ clients, notifications }: DashboardProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [cashflow, setCashflow] = useState<CashFlowEntry[]>([]);
   const [settings, setSettings] = useState<Settings>(getSettingsSync());
 
   useEffect(() => {
     getPayments().then(setPayments);
+    getCashFlow().then(setCashflow);
     getSettings().then(setSettings);
   }, []);
 
   const activos = clients.filter(c => c.estado === 'activo').length;
   const inactivos = clients.filter(c => c.estado === 'inactivo').length;
-  const totalIngresos = payments.reduce((sum, p) => sum + p.monto, 0);
+
+  const totalIngresos = cashflow.reduce((sum, e) => sum + (Number(e.ingreso) || 0), 0);
+  const totalEgresos = cashflow.reduce((sum, e) => sum + (Number(e.egreso) || 0), 0);
+  const disponible = totalIngresos - totalEgresos;
+
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+
+  const altasDelMes = clients.filter(c => {
+    if (!c.fechaIngreso) return false;
+    const d = new Date(c.fechaIngreso + 'T12:00:00');
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  }).length;
+
+  const ingresosDelMes = cashflow.reduce((sum, e) => {
+    if (!e.fecha) return sum;
+    const d = new Date(e.fecha + 'T12:00:00');
+    if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
+      return sum + (Number(e.ingreso) || 0);
+    }
+    return sum;
+  }, 0);
 
   const recentPayments = useMemo(() =>
     [...payments].sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()).slice(0, 6),
@@ -52,10 +76,16 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
           <StatCard key="t" title="Total Clientes" value={clients.length} icon={<Users className="w-5 h-5" />} variant="primary" />,
           <StatCard key="a" title="Activos" value={activos} icon={<UserCheck className="w-5 h-5" />} variant="success" subtitle="Al día con sus pagos" />,
           <StatCard key="i" title="Inactivos" value={inactivos} icon={<UserX className="w-5 h-5" />} variant="destructive" subtitle="Cuota vencida" />,
-          <StatCard key="$" title="Ingresos Totales" value={`$${totalIngresos.toLocaleString('es-AR')}`} icon={<TrendingUp className="w-5 h-5" />} variant="electric" />,
+          <StatCard key="ingresos" title="Ingresos" value={`$${totalIngresos.toLocaleString('es-AR')}`} icon={<TrendingUp className="w-5 h-5" />} variant="electric" />,
         ].map((card, i) => (
           <div key={i}>{card}</div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <StatCard title="Disponible en Caja" value={`$${disponible.toLocaleString('es-AR')}`} icon={<DollarSign className="w-5 h-5" />} variant={disponible >= 0 ? "success" : "destructive"} />
+        <StatCard title="Altas del Mes" value={altasDelMes} icon={<UserPlus className="w-5 h-5" />} variant="violet" />
+        <StatCard title="Ingresos del Mes" value={`$${ingresosDelMes.toLocaleString('es-AR')}`} icon={<CalendarDays className="w-5 h-5" />} variant="primary" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

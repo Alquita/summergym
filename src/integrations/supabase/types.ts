@@ -64,7 +64,10 @@ export type Database = {
       }
       configuracion: {
         Row: {
-          cuota_mensual: number
+          precio_pase_libre: number
+          precio_3x_semana: number
+          precio_2x_semana: number
+          precio_1_dia: number
           dias_alerta: number
           dias_inactividad: number
           direccion: string
@@ -74,7 +77,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          cuota_mensual?: number
+          precio_pase_libre?: number
+          precio_3x_semana?: number
+          precio_2x_semana?: number
+          precio_1_dia?: number
           dias_alerta?: number
           dias_inactividad?: number
           direccion?: string
@@ -84,7 +90,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          cuota_mensual?: number
+          precio_pase_libre?: number
+          precio_3x_semana?: number
+          precio_2x_semana?: number
+          precio_1_dia?: number
           dias_alerta?: number
           dias_inactividad?: number
           direccion?: string

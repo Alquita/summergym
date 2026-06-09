@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo } from "react";
 import { CreditCard, UserPlus, Search, Check, X, DollarSign, CheckCircle2, User } from "lucide-react";
 import { DatePicker } from "../components/ui/date-picker";
 import { toDate, fromDate } from "../lib/date-utils";
-import { getPayments, savePayment, getClients, saveClient, getSettings, getSettingsSync } from "../lib/store";
-import { Payment, Client, Settings } from "../lib/types";
+import { getPayments, savePayment, getClients, saveClient, updateClient, getSettings, getSettingsSync } from "../lib/store";
+import { Payment, Client, Settings, planPrice } from "../lib/types";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const metodos: Payment['modalidadPago'][] = ['Efectivo', 'Transferencia', 'Debito', 'Credito'];
-const planes = ['Pase libre', '3 x s', '2 x s', '2 dias'];
+const planes = ['Pase libre', '3 x s', '2 x s', '1 dia'];
 
 const emptyNewClient = {
   nombre: '', apellido: '', fechaNacimiento: '', direccion: '',
@@ -26,7 +26,7 @@ export default function Pagos() {
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
     modalidadPago: 'Efectivo' as Payment['modalidadPago'],
-    monto: String(getSettingsSync().cuotaMensual || ''),
+    monto: String(planPrice('Pase libre', getSettingsSync())),
     fechaPago: new Date().toISOString().split('T')[0],
     plan: 'Pase libre',
   });
@@ -34,7 +34,7 @@ export default function Pagos() {
   const [newClient, setNewClient] = useState(emptyNewClient);
   const [newPago, setNewPago] = useState({
     modalidadPago: 'Efectivo' as Payment['modalidadPago'],
-    monto: String(getSettingsSync().cuotaMensual || ''),
+    monto: String(planPrice('Pase libre', getSettingsSync())),
     fechaPago: new Date().toISOString().split('T')[0],
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
@@ -61,8 +61,11 @@ export default function Pagos() {
       monto: Number(form.monto),
       clientName: `${selectedClient.apellido} ${selectedClient.nombre}`,
     });
+    if (selectedClient.plan !== form.plan) {
+      await updateClient({ ...selectedClient, plan: form.plan });
+    }
     await refresh();
-    setForm(f => ({ ...f, clientId: '', monto: String(settings.cuotaMensual || '') }));
+    setForm(f => ({ ...f, clientId: '', monto: String(planPrice(f.plan || 'Pase libre', settings)) }));
     setClientSearch('');
   };
 
@@ -92,7 +95,7 @@ export default function Pagos() {
     setNewClient(emptyNewClient);
     setNewPago({
       modalidadPago: 'Efectivo',
-      monto: String(settings.cuotaMensual || ''),
+      monto: String(planPrice('Pase libre', settings)),
       fechaPago: new Date().toISOString().split('T')[0],
       mes: meses[new Date().getMonth()],
       anio: new Date().getFullYear(),
@@ -135,19 +138,37 @@ export default function Pagos() {
         <form onSubmit={handleSubmit} className="space-y-6 pt-6">
           <div>
             <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">1. Seleccionar Cliente</p>
-            {selectedClient ? (
-              <div className="flex items-center justify-between gap-2 px-4 py-3 bg-primary/10 border border-primary/40 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-primary" />
+              {selectedClient ? (
+              <div>
+                <div className="flex items-center justify-between gap-2 px-4 py-3 bg-primary/10 border border-primary/40 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{selectedClient.apellido} {selectedClient.nombre}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">{selectedClient.apellido} {selectedClient.nombre}</p>
-                    <p className="text-xs text-muted-foreground">Plan: {selectedClient.plan}</p>
+                  <button type="button" onClick={() => { setForm(p => ({ ...p, clientId: '' })); setClientSearch(''); }}
+                    className="text-muted-foreground hover:text-foreground p-1"><X className="w-4 h-4" /></button>
+                </div>
+                <div className="mt-3">
+                  <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Plan</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {planes.map(p => {
+                      const active = form.plan === p;
+                      return (
+                        <button key={p} type="button" onClick={() => setForm(prev => ({ ...prev, plan: p, monto: String(planPrice(p, settings)) }))}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            active ? 'bg-primary border-primary text-primary-foreground'
+                              : 'bg-input border-border text-muted-foreground hover:text-foreground'
+                          }`}>
+                          {p}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-                <button type="button" onClick={() => { setForm(p => ({ ...p, clientId: '' })); setClientSearch(''); }}
-                  className="text-muted-foreground hover:text-foreground p-1"><X className="w-4 h-4" /></button>
               </div>
             ) : (
               <div className="relative">
@@ -259,7 +280,7 @@ export default function Pagos() {
               ].map(f => (
                 <div key={f.key} className={f.key === 'direccion' ? 'sm:col-span-2' : ''}>
                   <label className="text-xs text-muted-foreground font-medium mb-1.5 block">{f.label}</label>
-                  <input type={f.type || 'text'} required={f.required}
+                   <input type="text" required={f.required}
                     value={(newClient as any)[f.key]}
                     onChange={e => setNewClient(p => ({ ...p, [f.key]: e.target.value }))}
                     className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
@@ -271,7 +292,7 @@ export default function Pagos() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Plan</label>
-                <select value={newClient.plan} onChange={e => setNewClient(p => ({ ...p, plan: e.target.value }))}
+                <select value={newClient.plan} onChange={e => { const plan = e.target.value; setNewClient(p => ({ ...p, plan })); setNewPago(p => ({ ...p, monto: String(planPrice(plan, settings)) })); }}
                   className="w-full px-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
                   {planes.map(p => <option key={p}>{p}</option>)}
                 </select>

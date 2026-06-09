@@ -278,22 +278,10 @@ export default function Clientes() {
                 <FormInput icon={<PhoneCall className="w-4 h-4" />} label="Teléfono Emergencia (opcional)" value={form.telefonoEmergencia} onChange={v => setForm(p => ({ ...p, telefonoEmergencia: v }))} />
               </div>
 
-              {/* Plan & notes */}
               <div className="space-y-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
-                  <span className="h-px flex-1 bg-border/40" />Plan y notas<span className="h-px flex-1 bg-border/40" />
+                  <span className="h-px flex-1 bg-border/40" />Notas<span className="h-px flex-1 bg-border/40" />
                 </p>
-                <div>
-                  <label className="text-xs text-muted-foreground font-medium ml-1">Plan</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1.5">
-                    {['Pase libre', '3 x s', '2 x s', '2 dias'].map(p => (
-                      <button type="button" key={p} onClick={() => setForm(prev => ({ ...prev, plan: p }))}
-                        className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${form.plan === p ? 'bg-primary text-primary-foreground' : 'bg-input border border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-medium ml-1">Observaciones</label>
                   <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))}

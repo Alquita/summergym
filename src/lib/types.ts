@@ -50,8 +50,21 @@ export interface Settings {
   gymName: string;
   direccion: string;
   telefono: string;
-  cuotaMensual: number;
+  precioPaseLibre: number;
+  precio3xSemana: number;
+  precio2xSemana: number;
+  precio1Dia: number;
   diasAlerta: number;
   diasInactividad: number;
+}
+
+export function planPrice(plan: string | undefined, s: Settings): number {
+  switch (plan) {
+    case 'Pase libre': return s.precioPaseLibre;
+    case '3 x s': return s.precio3xSemana;
+    case '2 x s': return s.precio2xSemana;
+    case '1 dia': return s.precio1Dia;
+    default: return s.precioPaseLibre;
+  }
 }
 

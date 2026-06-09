@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Settings as SettingsIcon, BarChart3, Building2, DollarSign, Upload, Download, Save, Users, TrendingUp, Bell, Lightbulb } from "lucide-react";
 import { getSettings, saveSettings, getClients, getPayments, exportAllData, importAllData } from "../lib/store";
-import { Settings } from "../lib/types";
+import { Settings, planPrice } from "../lib/types";
 import { toast } from "sonner";
 
-const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', cuotaMensual: 35000, diasAlerta: 5, diasInactividad: 35 };
+const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35 };
 
 export default function Configuracion() {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
@@ -16,13 +16,14 @@ export default function Configuracion() {
   useEffect(() => {
     (async () => {
       const [clients, payments] = await Promise.all([getClients(), getPayments()]);
-      const activos = clients.filter(c => c.estado === 'activo').length;
+      const clientesActivos = clients.filter(c => c.estado === 'activo');
       const ingresosMes = payments
         .filter(p => new Date(p.fechaPago).getFullYear() === new Date().getFullYear() && new Date(p.fechaPago).getMonth() === new Date().getMonth())
         .reduce((s, p) => s + p.monto, 0);
-      setStats({ total: clients.length, activos, ingresosMes, estimado: activos * settings.cuotaMensual });
+      const estimado = clientesActivos.reduce((sum, c) => sum + planPrice(c.plan, settings), 0);
+      setStats({ total: clients.length, activos: clientesActivos.length, ingresosMes, estimado });
     })();
-  }, [settings.cuotaMensual]);
+  }, [settings.precioPaseLibre, settings.precio3xSemana, settings.precio2xSemana, settings.precio1Dia]);
 
   const handleSave = async () => {
     await saveSettings(settings);
@@ -91,7 +92,13 @@ export default function Configuracion() {
 
       {/* Payment Config */}
       <Section icon={<DollarSign className="w-4 h-4" />} title="Configuración de Pagos">
-        <Field label="Cuota Mensual ($)" type="number" value={String(settings.cuotaMensual)} onChange={v => setSettings(s => ({ ...s, cuotaMensual: Number(v) || 0 }))} />
+        <p className="text-xs font-semibold text-muted-foreground mb-2">Precios por Plan</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Pase libre ($)" type="number" value={String(settings.precioPaseLibre)} onChange={v => setSettings(s => ({ ...s, precioPaseLibre: Number(v) || 0 }))} />
+          <Field label="3 x semana ($)" type="number" value={String(settings.precio3xSemana)} onChange={v => setSettings(s => ({ ...s, precio3xSemana: Number(v) || 0 }))} />
+          <Field label="2 x semana ($)" type="number" value={String(settings.precio2xSemana)} onChange={v => setSettings(s => ({ ...s, precio2xSemana: Number(v) || 0 }))} />
+          <Field label="1 día ($)" type="number" value={String(settings.precio1Dia)} onChange={v => setSettings(s => ({ ...s, precio1Dia: Number(v) || 0 }))} />
+        </div>
         <Field label="Días de Alerta (antes del vencimiento)" type="number" value={String(settings.diasAlerta)} onChange={v => setSettings(s => ({ ...s, diasAlerta: Number(v) || 0 }))} />
         <p className="text-xs text-muted-foreground -mt-1 flex items-center gap-1.5">
           <Bell className="w-3 h-3" /> Se enviará una alerta {settings.diasAlerta} días antes del vencimiento

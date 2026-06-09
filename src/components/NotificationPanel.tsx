@@ -36,49 +36,51 @@ export default function NotificationPanel({ notifications }: NotificationPanelPr
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-12 z-50 w-[360px] max-h-[70vh] overflow-y-auto glass-card border border-border shadow-2xl animate-fade-in">
-            <div className="sticky top-0 bg-card/95 backdrop-blur-sm p-4 border-b border-border/50 flex items-center justify-between">
-              <h3 className="font-heading font-semibold text-sm">Notificaciones ({visible.length})</h3>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {visible.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground text-sm">
-                <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                Todo al día 👍
+          <div className="fixed inset-x-4 top-24 bottom-4 z-50 md:absolute md:inset-auto md:right-0 md:top-12 md:w-[360px] md:max-h-[70vh] overflow-y-auto bg-card md:bg-transparent rounded-xl border border-border md:border-0 shadow-2xl animate-fade-in">
+            <div className="flex flex-col min-h-full md:glass-card md:border md:border-border">
+              <div className="sticky top-0 bg-card p-4 border-b border-border/50 flex items-center justify-between">
+                <h3 className="font-heading font-semibold text-sm">Notificaciones ({visible.length})</h3>
+                <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground p-1">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            ) : (
-              <div className="divide-y divide-border/30">
-                {visible.map(n => {
-                  const config = typeConfig[n.type];
-                  const Icon = config.icon;
-                  return (
-                    <div key={n.id} className="p-3 hover:bg-secondary/30 transition-colors">
-                      <div className="flex gap-3">
-                        <div className={`p-2 rounded-lg ${config.bg} shrink-0 self-start`}>
-                          <Icon className={`w-4 h-4 ${config.color}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium text-sm truncate">{n.clientName}</span>
-                            <button onClick={() => setDismissed(prev => new Set(prev).add(n.id))}
-                              className="text-muted-foreground hover:text-foreground shrink-0">
-                              <X className="w-3 h-3" />
-                            </button>
+
+              {visible.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground text-sm">
+                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  Todo al día
+                </div>
+              ) : (
+                <div className="divide-y divide-border/30">
+                  {visible.map(n => {
+                    const config = typeConfig[n.type];
+                    const Icon = config.icon;
+                    return (
+                      <div key={n.id} className="p-3 hover:bg-secondary/30 transition-colors">
+                        <div className="flex gap-3">
+                          <div className={`p-2 rounded-lg ${config.bg} shrink-0 self-start`}>
+                            <Icon className={`w-4 h-4 ${config.color}`} />
                           </div>
-                          <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                          <span className={`inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full font-semibold ${config.bg} ${config.color}`}>
-                            {config.label}
-                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-sm truncate">{n.clientName}</span>
+                              <button onClick={() => setDismissed(prev => new Set(prev).add(n.id))}
+                                className="text-muted-foreground hover:text-foreground shrink-0">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
+                            <span className={`inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full font-semibold ${config.bg} ${config.color}`}>
+                              {config.label}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </>
       )}

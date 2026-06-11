@@ -107,23 +107,23 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
             </h2>
             {alertas.length > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">{alertas.length}</span>}
           </div>
-          <div className="space-y-1">
+          <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
             {alertas.length === 0 && (
               <p className="text-muted-foreground text-sm py-6 text-center">Todos los clientes están al día</p>
             )}
-            {alertas.map((a) => (
+            {alertas.slice(0, 6).map((a) => (
               <div key={a.id}
-                className={`flex items-center justify-between p-3 rounded-lg border ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border-destructive/20' : 'bg-warning/5 border-warning/20'}`}>
-                <div className="flex items-center gap-3 min-w-0">
+                className={`flex items-center justify-between p-2 rounded-lg border ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border-destructive/20' : 'bg-warning/5 border-warning/20'}`}>
+                <div className="flex items-center gap-2 min-w-0">
                   {a.type === 'cuota_vencida'
-                    ? <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
-                    : <Clock className="w-4 h-4 text-warning shrink-0" />}
+                    ? <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />
+                    : <Clock className="w-3 h-3 text-warning shrink-0" />}
                   <div className="min-w-0">
-                    <p className="text-sm truncate">{a.clientName}</p>
-                    <p className="text-xs text-muted-foreground truncate">{a.message}</p>
+                    <p className="text-xs truncate">{a.clientName}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{a.message}</p>
                   </div>
                 </div>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${a.type === 'cuota_vencida' ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ml-1.5 ${a.type === 'cuota_vencida' ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
                   {a.type === 'cuota_vencida' ? 'Vencida' : 'Por vencer'}
                 </span>
               </div>

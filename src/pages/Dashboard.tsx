@@ -32,6 +32,8 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
   const activos = clients.filter(c => c.estado === 'activo').length;
   const inactivos = clients.filter(c => c.estado === 'inactivo').length;
 
+  const DISTRIBUCION_TIPOS = ['CORTE DE CAJA', 'DIV. INGRESO C.C.', 'DIV. INGRESO J. I.'];
+
   const cashflowDelMesActivo = useMemo(() =>
     cashflow.filter(e => {
       if (!e.fecha) return false;
@@ -40,8 +42,9 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
     }),
   [cashflow, activeMonth]);
 
-  const ingresosActivo = cashflowDelMesActivo.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
-  const egresosActivo = cashflowDelMesActivo.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
+  const operativos = cashflowDelMesActivo.filter(e => !DISTRIBUCION_TIPOS.includes(e.tipo));
+  const ingresosActivo = operativos.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
+  const egresosActivo = operativos.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
   const disponibleActivo = ingresosActivo - egresosActivo;
 
   const altasMesActivo = clients.filter(c => {

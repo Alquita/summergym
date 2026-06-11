@@ -46,7 +46,7 @@ export default function FlujoCaja() {
     });
   }, [entries, selectedMonth, selectedYear]);
 
-  const DISTRIBUCION_TIPOS = ['CORTE DE CAJA', 'DIV. INGRESO C.C.', 'DIV. INGRESO J.I.'];
+  const DISTRIBUCION_TIPOS = ['CORTE DE CAJA', 'DIV. INGRESO C.C.', 'DIV. INGRESO J. I.'];
 
   const totals = useMemo(() => {
     const dist = monthEntries.filter(e => DISTRIBUCION_TIPOS.includes(e.tipo));

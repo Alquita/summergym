@@ -298,13 +298,19 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
           message: `Cuota vencida hace ${daysSince - (limite - 5)} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(), read: false,
         });
-      } else if (daysSince >= limite - alerta) {
-        notifications.push({
-          id: generateId(), type: 'cuota_por_vencer', clientId: client.id,
-          clientName: `${client.nombre} ${client.apellido}`,
-          message: `La cuota vence en ${limite - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
-          date: now.toISOString(), read: false,
-        });
+      } else {
+        if (client.estado === 'inactivo') {
+          client.estado = 'activo';
+          updates.push(updateClient(client));
+        }
+        if (daysSince >= limite - alerta) {
+          notifications.push({
+            id: generateId(), type: 'cuota_por_vencer', clientId: client.id,
+            clientName: `${client.nombre} ${client.apellido}`,
+            message: `La cuota vence en ${limite - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+            date: now.toISOString(), read: false,
+          });
+        }
       }
     }
 

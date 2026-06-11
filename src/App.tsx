@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Clock, Cake, X } from "lucide-react";
 import Navbar from "./components/Navbar";
@@ -23,16 +23,20 @@ const App = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [ready, setReady] = useState(false);
 
+  const reSync = useCallback(async () => {
+    const { updatedClients, notifications: notifs } = await syncClientStatuses();
+    setClients(updatedClients);
+    setNotifications(notifs);
+  }, []);
+
   useEffect(() => {
     (async () => {
       await seedIfEmpty();
       await getSettings();
-      const { updatedClients, notifications: notifs } = await syncClientStatuses();
-      setClients(updatedClients);
-      setNotifications(notifs);
+      await reSync();
       setReady(true);
     })();
-  }, []);
+  }, [reSync]);
 
   useEffect(() => {
     if (!ready) return;
@@ -105,7 +109,7 @@ const App = () => {
                   <Route path="/clientes" element={<Clientes />} />
                   <Route path="/pagos" element={<Pagos />} />
                   <Route path="/caja" element={<FlujoCaja />} />
-                  <Route path="/configuracion" element={<Configuracion />} />
+                  <Route path="/configuracion" element={<Configuracion onSettingsSaved={reSync} />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               )}

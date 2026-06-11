@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35 };
 
-export default function Configuracion() {
+export default function Configuracion({ onSettingsSaved }: { onSettingsSaved?: () => void }) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
   const [stats, setStats] = useState({ total: 0, activos: 0, ingresosMes: 0, estimado: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
@@ -27,7 +27,8 @@ export default function Configuracion() {
 
   const handleSave = async () => {
     await saveSettings(settings);
-    toast.success("Configuración guardada");
+    await onSettingsSaved?.();
+    toast.success("Configuración guardada — estados actualizados");
   };
 
   const handleExport = async () => {

@@ -99,15 +99,15 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Alertas */}
-        <div className="glass-card p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-4 shrink-0">
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="font-heading font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-warning" />
               Alertas de Cuotas
             </h2>
             {alertas.length > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">{alertas.length}</span>}
           </div>
-          <div className="flex-1 overflow-y-auto space-y-1 pr-1 scrollbar-custom">
+          <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1 scrollbar-custom">
             {alertas.length === 0 && (
               <p className="text-muted-foreground text-sm py-6 text-center">Todos los clientes están al día</p>
             )}

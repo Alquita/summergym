@@ -77,11 +77,10 @@
     width: 5px;
   }
   .scrollbar-custom::-webkit-scrollbar-track {
-    background: hsl(var(--border));
-    border-radius: 10px;
+    background: transparent;
   }
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.5);
+    background: #111;
     border-radius: 10px;
   }
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {

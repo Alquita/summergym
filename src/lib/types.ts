@@ -26,6 +26,16 @@ export interface Payment {
   observaciones?: string;
 }
 
+export interface CierreMensual {
+  id: string;
+  mes: number;
+  anio: number;
+  totalIngresos: number;
+  totalEgresos: number;
+  saldoFinal: number;
+  fechaCierre: string;
+}
+
 export interface CashFlowEntry {
   id: string;
   fecha: string;
@@ -56,6 +66,8 @@ export interface Settings {
   precio1Dia: number;
   diasAlerta: number;
   diasInactividad: number;
+  mesActivoMes: number;
+  mesActivoAnio: number;
 }
 
 export function planPrice(plan: string | undefined, s: Settings): number {

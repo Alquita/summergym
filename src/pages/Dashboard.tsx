@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users, UserCheck, UserX, TrendingUp, DollarSign, UserPlus, CalendarDays, AlertTriangle, Clock } from "lucide-react";
+import { Users, UserCheck, UserX, TrendingUp, DollarSign, UserPlus, AlertTriangle, Clock } from "lucide-react";
 import StatCard from "../components/StatCard";
 import { Notification, Client, Payment, CashFlowEntry, Settings } from "../lib/types";
 import { getPayments, getCashFlow, getSettings, getSettingsSync } from "../lib/store";
 import gymLogo from "@/assets/summergym.jpg";
+
+const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 interface DashboardProps {
   clients: Client[];
@@ -16,36 +18,37 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
   const [settings, setSettings] = useState<Settings>(getSettingsSync());
 
   useEffect(() => {
-    getPayments().then(setPayments);
-    getCashFlow().then(setCashflow);
-    getSettings().then(setSettings);
+    Promise.all([getPayments(), getCashFlow(), getSettings()]).then(
+      ([p, c, s]) => {
+        setPayments(p);
+        setCashflow(c);
+        setSettings(s);
+      }
+    );
   }, []);
+
+  const activeMonth = { mes: settings.mesActivoMes, anio: settings.mesActivoAnio };
 
   const activos = clients.filter(c => c.estado === 'activo').length;
   const inactivos = clients.filter(c => c.estado === 'inactivo').length;
 
-  const totalIngresos = cashflow.reduce((sum, e) => sum + (Number(e.ingreso) || 0), 0);
-  const totalEgresos = cashflow.reduce((sum, e) => sum + (Number(e.egreso) || 0), 0);
-  const disponible = totalIngresos - totalEgresos;
+  const cashflowDelMesActivo = useMemo(() =>
+    cashflow.filter(e => {
+      if (!e.fecha) return false;
+      const d = new Date(e.fecha + 'T12:00:00');
+      return d.getMonth() + 1 === activeMonth.mes && d.getFullYear() === activeMonth.anio;
+    }),
+  [cashflow, activeMonth]);
 
-  const now = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear = now.getFullYear();
+  const ingresosActivo = cashflowDelMesActivo.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
+  const egresosActivo = cashflowDelMesActivo.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
+  const disponibleActivo = ingresosActivo - egresosActivo;
 
-  const altasDelMes = clients.filter(c => {
+  const altasMesActivo = clients.filter(c => {
     if (!c.fechaIngreso) return false;
     const d = new Date(c.fechaIngreso + 'T12:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    return d.getMonth() + 1 === activeMonth.mes && d.getFullYear() === activeMonth.anio;
   }).length;
-
-  const ingresosDelMes = cashflow.reduce((sum, e) => {
-    if (!e.fecha) return sum;
-    const d = new Date(e.fecha + 'T12:00:00');
-    if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
-      return sum + (Number(e.ingreso) || 0);
-    }
-    return sum;
-  }, 0);
 
   const recentPayments = useMemo(() =>
     [...payments].sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime()).slice(0, 6),
@@ -53,6 +56,8 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
   );
 
   const alertas = notifications.filter(n => n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer');
+
+  const monthLabel = `${MONTHS[activeMonth.mes - 1]} ${activeMonth.anio}`;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -62,7 +67,9 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
           <div>
             <p className="text-xs text-muted-foreground mb-1">{new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
             <h1 className="text-3xl md:text-4xl font-heading font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Todo lo que pasa en <span className="text-foreground">{settings.gymName}</span>.</p>
+            <p className="text-muted-foreground mt-1">
+              Mostrando mes activo: <span className="text-foreground font-semibold">{monthLabel}</span>
+            </p>
           </div>
           <div className="hidden sm:block w-16 h-16 rounded-xl overflow-hidden">
             <img src={gymLogo} alt="Summer Gym" className="w-full h-full object-cover" />
@@ -76,16 +83,15 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
           <StatCard key="t" title="Total Clientes" value={clients.length} icon={<Users className="w-5 h-5" />} variant="primary" />,
           <StatCard key="a" title="Activos" value={activos} icon={<UserCheck className="w-5 h-5" />} variant="success" subtitle="Al día con sus pagos" />,
           <StatCard key="i" title="Inactivos" value={inactivos} icon={<UserX className="w-5 h-5" />} variant="destructive" subtitle="Cuota vencida" />,
-          <StatCard key="ingresos" title="Ingresos" value={`$${totalIngresos.toLocaleString('es-AR')}`} icon={<TrendingUp className="w-5 h-5" />} variant="electric" />,
+          <StatCard key="ingresos" title={`Ingresos · ${monthLabel}`} value={`$${ingresosActivo.toLocaleString('es-AR')}`} icon={<TrendingUp className="w-5 h-5" />} variant="electric" />,
         ].map((card, i) => (
           <div key={i}>{card}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard title="Disponible en Caja" value={`$${disponible.toLocaleString('es-AR')}`} icon={<DollarSign className="w-5 h-5" />} variant={disponible >= 0 ? "success" : "destructive"} />
-        <StatCard title="Altas del Mes" value={altasDelMes} icon={<UserPlus className="w-5 h-5" />} variant="violet" />
-        <StatCard title="Ingresos del Mes" value={`$${ingresosDelMes.toLocaleString('es-AR')}`} icon={<CalendarDays className="w-5 h-5" />} variant="primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatCard title={`Disponible · ${monthLabel}`} value={`$${disponibleActivo.toLocaleString('es-AR')}`} icon={<DollarSign className="w-5 h-5" />} variant={disponibleActivo >= 0 ? "success" : "destructive"} />
+        <StatCard title={`Altas · ${monthLabel}`} value={altasMesActivo} icon={<UserPlus className="w-5 h-5" />} variant="violet" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

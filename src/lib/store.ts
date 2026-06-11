@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Client, Payment, CashFlowEntry, Notification, Settings } from './types';
+import { Client, Payment, CashFlowEntry, CierreMensual, Notification, Settings } from './types';
 
 const DEFAULT_SETTINGS: Settings = {
   gymName: 'Summer Gym',
@@ -11,6 +11,8 @@ const DEFAULT_SETTINGS: Settings = {
   precio1Dia: 10000,
   diasAlerta: 5,
   diasInactividad: 35,
+  mesActivoMes: new Date().getMonth() + 1,
+  mesActivoAnio: new Date().getFullYear(),
 };
 
 // ============ Mappers ============
@@ -110,6 +112,8 @@ export async function getSettings(): Promise<Settings> {
     precio1Dia: Number(data.precio_1_dia),
     diasAlerta: data.dias_alerta,
     diasInactividad: data.dias_inactividad,
+    mesActivoMes: data.mes_activo_mes ?? new Date().getMonth() + 1,
+    mesActivoAnio: data.mes_activo_anio ?? new Date().getFullYear(),
   };
   return cachedSettings;
 }
@@ -129,6 +133,8 @@ export async function saveSettings(s: Settings): Promise<void> {
     precio_1_dia: s.precio1Dia,
     dias_alerta: s.diasAlerta,
     dias_inactividad: s.diasInactividad,
+    mes_activo_mes: s.mesActivoMes,
+    mes_activo_anio: s.mesActivoAnio,
     updated_at: new Date().toISOString(),
   });
 }
@@ -188,6 +194,52 @@ export async function deleteCashFlowEntry(id: string): Promise<void> {
 }
 export async function updateCashFlowEntry(e: CashFlowEntry): Promise<void> {
   await supabase.from('flujo_caja').update(cashToRow(e)).eq('id', e.id);
+}
+
+// ============ Monthly Closings ============
+export async function getCierresMensuales(): Promise<CierreMensual[]> {
+  const { data } = await supabase.from('cierres_mensuales').select('*').order('anio', { ascending: false }).order('mes', { ascending: false });
+  return (data || []).map(r => ({
+    id: r.id,
+    mes: r.mes,
+    anio: r.anio,
+    totalIngresos: Number(r.total_ingresos),
+    totalEgresos: Number(r.total_egresos),
+    saldoFinal: Number(r.saldo_final),
+    fechaCierre: r.fecha_cierre,
+  }));
+}
+export async function getCierreByMonth(mes: number, anio: number): Promise<CierreMensual | null> {
+  const { data } = await supabase.from('cierres_mensuales').select('*').eq('mes', mes).eq('anio', anio).maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    mes: data.mes,
+    anio: data.anio,
+    totalIngresos: Number(data.total_ingresos),
+    totalEgresos: Number(data.total_egresos),
+    saldoFinal: Number(data.saldo_final),
+    fechaCierre: data.fecha_cierre,
+  };
+}
+export async function saveCierreMensual(c: Omit<CierreMensual, 'id' | 'fechaCierre'>): Promise<CierreMensual> {
+  const { data, error } = await supabase.from('cierres_mensuales').insert({
+    mes: c.mes,
+    anio: c.anio,
+    total_ingresos: c.totalIngresos,
+    total_egresos: c.totalEgresos,
+    saldo_final: c.saldoFinal,
+  }).select().single();
+  if (error || !data) throw error;
+  return {
+    id: data.id,
+    mes: data.mes,
+    anio: data.anio,
+    totalIngresos: Number(data.total_ingresos),
+    totalEgresos: Number(data.total_egresos),
+    saldoFinal: Number(data.saldo_final),
+    fechaCierre: data.fecha_cierre,
+  };
 }
 
 // ============ Sync statuses & notifications ============

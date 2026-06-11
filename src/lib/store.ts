@@ -287,7 +287,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
       const lastPayment = new Date(clientPayments[0].fechaPago);
       const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
 
-      if (daysSince > limite) {
+      if (daysSince >= limite) {
         if (client.estado === 'activo') {
           client.estado = 'inactivo';
           updates.push(updateClient(client));

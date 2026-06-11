@@ -46,11 +46,17 @@ export default function FlujoCaja() {
     });
   }, [entries, selectedMonth, selectedYear]);
 
+  const DISTRIBUCION_TIPOS = ['CORTE DE CAJA', 'DIV. INGRESO C.C.', 'DIV. INGRESO J.I.'];
+
   const totals = useMemo(() => {
-    const list = monthEntries;
-    const ingresos = list.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
-    const egresos = list.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
-    return { ingresos, egresos, disponible: ingresos - egresos, cantidad: list.length };
+    const dist = monthEntries.filter(e => DISTRIBUCION_TIPOS.includes(e.tipo));
+    const ops = monthEntries.filter(e => !DISTRIBUCION_TIPOS.includes(e.tipo));
+
+    const ingresos = ops.reduce((s, e) => s + (Number(e.ingreso) || 0), 0);
+    const egresos = ops.reduce((s, e) => s + (Number(e.egreso) || 0), 0);
+    const distribuciones = dist.reduce((s, e) => s + (Number(e.ingreso) || 0) - (Number(e.egreso) || 0), 0);
+
+    return { ingresos, egresos, disponible: ingresos - egresos, distribuciones, cantidad: monthEntries.length };
   }, [monthEntries]);
 
   const goToPrevMonth = () => {
@@ -293,7 +299,7 @@ export default function FlujoCaja() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpRight className="w-4 h-4 text-success" /> Ingresos</div>
           <p className="text-2xl font-heading font-bold text-success mt-1">${totals.ingresos.toLocaleString('es-AR')}</p>
@@ -302,11 +308,15 @@ export default function FlujoCaja() {
           )}
         </div>
         <div className="glass-card p-5">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowDownRight className="w-4 h-4 text-destructive" /> Egresos</div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowDownRight className="w-4 h-4 text-destructive" /> Egresos Operativos</div>
           <p className="text-2xl font-heading font-bold text-destructive mt-1">${totals.egresos.toLocaleString('es-AR')}</p>
           {isClosed && cierreDelMes && (
             <p className="text-[10px] text-muted-foreground mt-1">Cerrado: ${cierreDelMes.totalEgresos.toLocaleString('es-AR')}</p>
           )}
+        </div>
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><ArrowDownRight className="w-4 h-4 text-warning" /> Distribuciones</div>
+          <p className="text-2xl font-heading font-bold text-warning mt-1">${Math.abs(totals.distribuciones).toLocaleString('es-AR')}</p>
         </div>
         <div className="glass-card p-5">
           <p className="text-sm text-muted-foreground">Disponible en Caja</p>

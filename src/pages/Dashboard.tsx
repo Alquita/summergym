@@ -107,11 +107,11 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
             </h2>
             {alertas.length > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">{alertas.length}</span>}
           </div>
-          <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+          <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1 scrollbar-custom">
             {alertas.length === 0 && (
               <p className="text-muted-foreground text-sm py-6 text-center">Todos los clientes están al día</p>
             )}
-            {alertas.slice(0, 6).map((a) => (
+            {alertas.map((a) => (
               <div key={a.id}
                 className={`flex items-center justify-between p-2 rounded-lg border ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border-destructive/20' : 'bg-warning/5 border-warning/20'}`}>
                 <div className="flex items-center gap-2 min-w-0">

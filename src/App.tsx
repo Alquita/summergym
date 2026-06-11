@@ -14,7 +14,7 @@ import FlujoCaja from "./pages/FlujoCaja";
 import Configuracion from "./pages/Configuracion";
 
 import NotFound from "./pages/NotFound";
-import { syncClientStatuses, seedIfEmpty, getSettings } from "./lib/store";
+import { syncClientStatuses, seedIfEmpty, getSettings, dismissNotificationKey, dismissAllNotificationKeys } from "./lib/store";
 import { Notification, Client } from "./lib/types";
 const queryClient = new QueryClient();
 
@@ -28,6 +28,16 @@ const App = () => {
     setClients(updatedClients);
     setNotifications(notifs);
   }, []);
+
+  const handleDismiss = useCallback(async (key: string) => {
+    await dismissNotificationKey(key);
+    await reSync();
+  }, [reSync]);
+
+  const handleDismissAll = useCallback(async (keys: string[]) => {
+    await dismissAllNotificationKeys(keys);
+    await reSync();
+  }, [reSync]);
 
   useEffect(() => {
     (async () => {
@@ -99,7 +109,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <div className="min-h-screen bg-background">
-            <Navbar notifications={notifications} />
+            <Navbar notifications={notifications} onDismiss={handleDismiss} onDismissAll={handleDismissAll} />
             <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
               {!ready ? (
                 <div className="flex items-center justify-center py-20 text-muted-foreground">Cargando datos...</div>

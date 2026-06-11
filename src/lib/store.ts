@@ -332,7 +332,35 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
   });
 
   await Promise.all(updates);
-  return { updatedClients: clients, notifications };
+
+  const dismissedKeys = await getDismissedNotificationKeys();
+  const notifKey = (type: string, clientId: string) =>
+    type === 'cumpleanos' ? `cumple:${clientId}:${now.getFullYear()}`
+    : type === 'cuota_vencida' ? `cv:${clientId}` : `cpv:${clientId}`;
+  const filtered = notifications.filter(n => !dismissedKeys.has(notifKey(n.type, n.clientId)));
+
+  return { updatedClients: clients, notifications: filtered };
+}
+
+// ============ Dismissed notifications ============
+export async function getDismissedNotificationKeys(): Promise<Set<string>> {
+  const { data } = await supabase.from('notificaciones_descartadas').select('notification_key');
+  return new Set((data || []).map(r => r.notification_key));
+}
+
+export async function dismissNotificationKey(key: string): Promise<void> {
+  const { data } = await supabase.from('notificaciones_descartadas').select('id').eq('notification_key', key).maybeSingle();
+  if (data) return;
+  await supabase.from('notificaciones_descartadas').insert({ notification_key: key });
+}
+
+export async function dismissAllNotificationKeys(keys: string[]): Promise<void> {
+  const { data: existing } = await supabase.from('notificaciones_descartadas').select('notification_key');
+  const existingKeys = new Set((existing || []).map(r => r.notification_key));
+  const newKeys = keys.filter(k => !existingKeys.has(k));
+  if (newKeys.length > 0) {
+    await supabase.from('notificaciones_descartadas').insert(newKeys.map(k => ({ notification_key: k })));
+  }
 }
 
 // ============ Export / Import ============

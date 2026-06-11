@@ -127,36 +127,38 @@ export default function FlujoCaja() {
   const handleCerrarMes = async () => {
     try {
       const label = `${MONTHS[selectedMonth - 1]} ${selectedYear}`;
-      const cierre = await saveCierreMensual({
-        mes: selectedMonth,
-        anio: selectedYear,
-        totalIngresos: totals.ingresos,
-        totalEgresos: totals.egresos,
-        saldoFinal: totals.disponible,
-      });
-      await saveCashFlowEntry({
-        fecha: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}`,
-        detalle: `Cierre mensual - ${label}`,
-        ingreso: totals.disponible > 0 ? totals.disponible : 0,
-        egreso: totals.disponible < 0 ? Math.abs(totals.disponible) : 0,
-        tipo: 'ingreso_otro',
-        observaciones: `Cierre de caja ${label}. Ingresos: $${totals.ingresos.toLocaleString('es-AR')} | Egresos: $${totals.egresos.toLocaleString('es-AR')} | Saldo: $${totals.disponible.toLocaleString('es-AR')}`,
-      });
+      const yaCerrado = cierres.some(c => c.mes === selectedMonth && c.anio === selectedYear);
+
+      if (yaCerrado) {
+        toast.info(`${label} ya estaba cerrado. Avanzando al siguiente.`);
+      } else {
+        await saveCierreMensual({
+          mes: selectedMonth,
+          anio: selectedYear,
+          totalIngresos: totals.ingresos,
+          totalEgresos: totals.egresos,
+          saldoFinal: totals.disponible,
+        });
+        await saveCashFlowEntry({
+          fecha: `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${new Date(selectedYear, selectedMonth, 0).getDate()}`,
+          detalle: `Cierre mensual - ${label}`,
+          ingreso: totals.disponible > 0 ? totals.disponible : 0,
+          egreso: totals.disponible < 0 ? Math.abs(totals.disponible) : 0,
+          tipo: 'ingreso_otro',
+          observaciones: `Cierre de caja ${label}. Ingresos: $${totals.ingresos.toLocaleString('es-AR')} | Egresos: $${totals.egresos.toLocaleString('es-AR')} | Saldo: $${totals.disponible.toLocaleString('es-AR')}`,
+        });
+        toast.success(`Mes ${label} cerrado correctamente`);
+      }
+
       await refresh();
       setShowCierreModal(false);
-      // Update active month to next month
       const nextM = selectedMonth === 12 ? 1 : selectedMonth + 1;
       const nextY = selectedMonth === 12 ? selectedYear + 1 : selectedYear;
       const s = await getSettings();
       await saveSettings({ ...s, mesActivoMes: nextM, mesActivoAnio: nextY });
-      toast.success(`Mes ${label} cerrado correctamente`);
       goToNextMonth();
     } catch (err: any) {
-      if (err?.message?.includes('unique') || err?.code === '23505') {
-        toast.error("Este mes ya fue cerrado anteriormente");
-      } else {
-        toast.error("Error al cerrar el mes");
-      }
+      toast.error("Error al cerrar el mes");
     }
   };
 

@@ -108,7 +108,7 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
             {alertas.length === 0 && (
               <p className="text-muted-foreground text-sm py-6 text-center">Todos los clientes están al día</p>
             )}
-            {alertas.slice(0, 8).map((a) => (
+            {alertas.map((a) => (
               <div key={a.id}
                 className={`flex items-center justify-between p-3 rounded-lg border ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border-destructive/20' : 'bg-warning/5 border-warning/20'}`}>
                 <div className="flex items-center gap-3 min-w-0">

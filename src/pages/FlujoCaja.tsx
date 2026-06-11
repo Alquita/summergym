@@ -3,7 +3,7 @@ import { Plus, X, ArrowUpRight, ArrowDownRight, DollarSign, FileText, CheckCircl
 import { toast } from "sonner";
 import { DatePicker } from "../components/ui/date-picker";
 import { toDate, fromDate } from "../lib/date-utils";
-import { getCashFlow, saveCashFlowEntry, updateCashFlowEntry, deleteCashFlowEntry, getCierresMensuales, saveCierreMensual, getSettings, saveSettings, getSettingsSync } from "../lib/store";
+import { getCashFlow, saveCashFlowEntry, updateCashFlowEntry, deleteCashFlowEntry, getCierresMensuales, saveCierreMensual, getSettings, saveSettings, getSettingsSync, backfillCashFlowFromPayments } from "../lib/store";
 import { CashFlowEntry, CierreMensual } from "../lib/types";
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -28,7 +28,10 @@ export default function FlujoCaja() {
     setEntries(Array.isArray(data) ? data : []);
     setCierres(Array.isArray(cierresData) ? cierresData : []);
   };
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    backfillCashFlowFromPayments();
+    refresh();
+  }, []);
 
   const cierreDelMes = useMemo(() =>
     cierres.find(c => c.mes === selectedMonth && c.anio === selectedYear),

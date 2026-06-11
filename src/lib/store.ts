@@ -242,6 +242,31 @@ export async function saveCierreMensual(c: Omit<CierreMensual, 'id' | 'fechaCier
   };
 }
 
+// ============ Backfill: create cash flow entries for old payments ============
+export async function backfillCashFlowFromPayments(): Promise<number> {
+  const [payments, cashflow] = await Promise.all([getPayments(), getCashFlow()]);
+  let count = 0;
+  for (const p of payments) {
+    const exists = cashflow.some(c =>
+      c.detalle === `Cuota ${p.mes} ${p.anio} - ${p.clientName}` &&
+      c.fecha === p.fechaPago &&
+      Number(c.ingreso) === Number(p.monto)
+    );
+    if (!exists) {
+      await saveCashFlowEntry({
+        fecha: p.fechaPago,
+        detalle: `Cuota ${p.mes} ${p.anio} - ${p.clientName}`,
+        ingreso: p.monto,
+        egreso: 0,
+        tipo: 'ingreso_cliente',
+        observaciones: `Pago ${p.modalidadPago} - ${p.plan}`,
+      });
+      count++;
+    }
+  }
+  return count;
+}
+
 // ============ Sync statuses & notifications ============
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 

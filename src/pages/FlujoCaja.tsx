@@ -414,27 +414,51 @@ export default function FlujoCaja() {
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
                   <span className="h-px flex-1 bg-border/40" />Tipo<span className="h-px flex-1 bg-border/40" />
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+        {/* Movimientos */}
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2 mt-3">
+                  <span className="h-px flex-1 bg-border/40" />Movimientos<span className="h-px flex-1 bg-border/40" />
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
                   {[
                     { value: 'ingreso_cliente', label: 'Ingreso Cliente' },
                     { value: 'ingreso_otro', label: 'Otro Ingreso' },
                     { value: 'egreso', label: 'Egreso' },
                     { value: 'adelanto', label: 'Adelanto' },
                     { value: 'aporte', label: 'Aporte' },
+                  ].map(t => {
+                    const active = form.tipo === t.value;
+                    const isEgreso = t.value === 'egreso';
+                    return (
+                      <button key={t.value} type="button" onClick={() => setForm(p => ({ ...p, tipo: t.value as any, ingreso: isEgreso ? '' : p.ingreso, egreso: isEgreso ? p.egreso : '' }))}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            active
+                              ? (isEgreso ? 'bg-destructive/15 border-destructive/30 text-destructive' : 'bg-success/15 border-success/30 text-success')
+                              : 'bg-input border-border text-muted-foreground hover:text-foreground'
+                          }`}>
+                          {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Distribuciones */}
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2 mt-3">
+                  <span className="h-px flex-1 bg-border/40" />Distribuciones<span className="h-px flex-1 bg-border/40" />
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
                     { value: 'CORTE DE CAJA', label: 'Corte Caja' },
                     { value: 'DIV. INGRESO C.C.', label: 'Div. C.C.' },
                     { value: 'DIV. INGRESO J. I.', label: 'Div. J.I.' },
                   ].map(t => {
                     const active = form.tipo === t.value;
-                    const isEgreso = t.value === 'egreso' || DISTRIBUCION_TIPOS.includes(t.value);
                     return (
-                      <button key={t.value} type="button" onClick={() => setForm(p => ({ ...p, tipo: t.value as any, ingreso: isEgreso ? '' : p.ingreso, egreso: isEgreso ? p.egreso : '' }))}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                          active
-                            ? (isEgreso ? 'bg-destructive/15 border-destructive/30 text-destructive' : 'bg-success/15 border-success/30 text-success')
-                            : 'bg-input border-border text-muted-foreground hover:text-foreground'
-                        }`}>
-                        {t.label}
+                      <button key={t.value} type="button" onClick={() => setForm(p => ({ ...p, tipo: t.value as any, ingreso: '', egreso: p.egreso }))}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            active
+                              ? 'bg-warning/15 border-warning/30 text-warning'
+                              : 'bg-input border-border text-muted-foreground hover:text-foreground'
+                          }`}>
+                          {t.label}
                       </button>
                     );
                   })}
@@ -449,7 +473,7 @@ export default function FlujoCaja() {
                   <FormInput icon={<ArrowUpRight className="w-4 h-4 text-success" />} label="Ingreso ($)" value={form.ingreso} onChange={v => setForm(p => ({ ...p, ingreso: v }))} placeholder="0" />
                 )}
                 {(form.tipo === 'egreso' || DISTRIBUCION_TIPOS.includes(form.tipo)) && (
-                  <FormInput icon={<ArrowDownRight className="w-4 h-4 text-destructive" />} label={form.tipo === 'egreso' ? 'Egreso ($)' : 'Monto ($)'} value={form.egreso} onChange={v => setForm(p => ({ ...p, egreso: v }))} placeholder="0" />
+                  <FormInput icon={<ArrowDownRight className={`w-4 h-4 ${DISTRIBUCION_TIPOS.includes(form.tipo) ? 'text-warning' : 'text-destructive'}`} />} label={form.tipo === 'egreso' ? 'Egreso ($)' : 'Monto ($)'} value={form.egreso} onChange={v => setForm(p => ({ ...p, egreso: v }))} placeholder="0" />
                 )}
               </div>
 

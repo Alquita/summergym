@@ -16,11 +16,9 @@ const navItems = [
 
 interface NavbarProps {
   notifications: Notification[];
-  onDismiss: (key: string) => void;
-  onDismissAll: (keys: string[]) => void;
 }
 
-export default function Navbar({ notifications, onDismiss, onDismissAll }: NavbarProps) {
+export default function Navbar({ notifications }: NavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -60,7 +58,7 @@ export default function Navbar({ notifications, onDismiss, onDismissAll }: Navba
         </div>
 
         <div className="flex items-center gap-1">
-          <NotificationPanel notifications={notifications} onDismiss={onDismiss} onDismissAll={onDismissAll} />
+          <NotificationPanel notifications={notifications} />
           <button onClick={() => navigate(location.pathname === '/configuracion' ? '/' : '/configuracion')}
             className={`p-2 rounded-lg transition-colors ${location.pathname === '/configuracion' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
             title="Configuración">

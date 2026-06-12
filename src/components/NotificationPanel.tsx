@@ -1,17 +1,10 @@
-import { Bell, X, AlertTriangle, Clock, Cake, Trash2 } from "lucide-react";
+import { Bell, X, AlertTriangle, Clock, Cake } from "lucide-react";
 import { useState, useRef } from "react";
 import { Notification } from "../lib/types";
 import { playNotifSound } from "../lib/sound";
 
-function nkey(n: Notification): string {
-  if (n.type === 'cumpleanos') return `cumple:${n.clientId}:${new Date().getFullYear()}`;
-  return n.type === 'cuota_vencida' ? `cv:${n.clientId}` : `cpv:${n.clientId}`;
-}
-
 interface NotificationPanelProps {
   notifications: Notification[];
-  onDismiss: (key: string) => void;
-  onDismissAll: (keys: string[]) => void;
 }
 
 const typeConfig = {
@@ -20,11 +13,12 @@ const typeConfig = {
   cumpleanos: { icon: Cake, color: "text-primary", bg: "bg-primary/10", label: "Cumpleaños" },
 };
 
-export default function NotificationPanel({ notifications, onDismiss, onDismissAll }: NotificationPanelProps) {
+export default function NotificationPanel({ notifications }: NotificationPanelProps) {
   const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const soundPlayed = useRef(false);
 
-  const visible = notifications;
+  const visible = notifications.filter(n => !dismissed.has(n.id));
   const urgentCount = visible.filter(n => n.type === 'cuota_vencida').length;
 
   return (
@@ -59,7 +53,6 @@ export default function NotificationPanel({ notifications, onDismiss, onDismissA
                   Todo al día
                 </div>
               ) : (
-                <>
                 <div className="divide-y divide-border/30">
                   {visible.map(n => {
                     const config = typeConfig[n.type];
@@ -73,7 +66,7 @@ export default function NotificationPanel({ notifications, onDismiss, onDismissA
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium text-sm truncate">{n.clientName}</span>
-                              <button onClick={() => onDismiss(nkey(n))}
+                              <button onClick={() => setDismissed(prev => new Set(prev).add(n.id))}
                                 className="text-muted-foreground hover:text-foreground shrink-0">
                                 <X className="w-3 h-3" />
                               </button>
@@ -88,13 +81,6 @@ export default function NotificationPanel({ notifications, onDismiss, onDismissA
                     );
                   })}
                 </div>
-                {visible.length > 0 && (
-                  <button onClick={() => onDismissAll(visible.map(n => nkey(n)))}
-                    className="sticky bottom-0 w-full flex items-center justify-center gap-2 p-3 bg-card hover:bg-destructive/10 text-muted-foreground hover:text-destructive text-xs font-medium transition-colors border-t border-border/30 rounded-b-xl">
-                    <Trash2 className="w-3.5 h-3.5" /> Limpiar todo
-                  </button>
-                )}
-                </>
               )}
             </div>
           </div>

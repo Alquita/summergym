@@ -10,9 +10,10 @@ const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 
 interface DashboardProps {
   clients: Client[];
   notifications: Notification[];
+  onRestoreNotifications?: () => void;
 }
 
-export default function Dashboard({ clients, notifications }: DashboardProps) {
+export default function Dashboard({ clients, notifications, onRestoreNotifications }: DashboardProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [cashflow, setCashflow] = useState<CashFlowEntry[]>([]);
   const [settings, setSettings] = useState<Settings>(getSettingsSync());
@@ -58,7 +59,22 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
     [payments]
   );
 
-  const alertas = notifications.filter(n => n.type === 'cuota_vencida' || n.type === 'cuota_por_vencer');
+  const inactivosList = clients.filter(c => c.estado === 'inactivo');
+
+  const porVencerList = useMemo(() => {
+    const limite = settings.diasInactividad;
+    const alerta = settings.diasAlerta;
+    const now = new Date();
+    return clients.filter(c => {
+      if (c.estado !== 'activo') return false;
+      const ps = payments.filter(p => p.clientId === c.id).sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
+      if (ps.length === 0) return false;
+      const daysSince = Math.floor((now.getTime() - new Date(ps[0].fechaPago).getTime()) / 86400000);
+      return daysSince >= limite - alerta;
+    });
+  }, [clients, payments, settings]);
+
+  const totalAlertas = inactivosList.length + porVencerList.length;
 
   const monthLabel = `${MONTHS[activeMonth.mes - 1]} ${activeMonth.anio}`;
 
@@ -99,36 +115,62 @@ export default function Dashboard({ clients, notifications }: DashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Alertas */}
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-warning" />
+        <div className="glass-card p-4 flex flex-col">
+          <div className="flex items-center justify-between mb-3 shrink-0">
+            <h2 className="font-heading font-semibold flex items-center gap-2 text-sm">
+              <AlertTriangle className="w-3.5 h-3.5 text-warning" />
               Alertas de Cuotas
             </h2>
-            {alertas.length > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">{alertas.length}</span>}
+            {totalAlertas > 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">{totalAlertas}</span>}
           </div>
-          <div className="max-h-[280px] overflow-y-auto space-y-1 pr-1 scrollbar-custom">
-            {alertas.length === 0 && (
-              <p className="text-muted-foreground text-sm py-6 text-center">Todos los clientes están al día</p>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-custom">
+            {totalAlertas === 0 && (
+              <p className="text-muted-foreground text-xs py-4 text-center">Todos los clientes están al día</p>
             )}
-            {alertas.map((a) => (
-              <div key={a.id}
-                className={`flex items-center justify-between p-2 rounded-lg border ${a.type === 'cuota_vencida' ? 'bg-destructive/5 border-destructive/20' : 'bg-warning/5 border-warning/20'}`}>
-                <div className="flex items-center gap-2 min-w-0">
-                  {a.type === 'cuota_vencida'
-                    ? <AlertTriangle className="w-3 h-3 text-destructive shrink-0" />
-                    : <Clock className="w-3 h-3 text-warning shrink-0" />}
-                  <div className="min-w-0">
-                    <p className="text-xs truncate">{a.clientName}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{a.message}</p>
-                  </div>
+            {inactivosList.length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-destructive font-semibold mb-1 flex items-center gap-1">
+                  <UserX className="w-3 h-3" /> Inactivos ({inactivosList.length})
+                </p>
+                <div className="space-y-1">
+                  {inactivosList.map(c => (
+                    <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-destructive/5 border border-destructive/20">
+                      <p className="text-xs truncate">{c.nombre} {c.apellido}</p>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-destructive/15 text-destructive font-medium shrink-0 ml-1.5">Inactivo</span>
+                    </div>
+                  ))}
                 </div>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ml-1.5 ${a.type === 'cuota_vencida' ? 'bg-destructive/15 text-destructive' : 'bg-warning/15 text-warning'}`}>
-                  {a.type === 'cuota_vencida' ? 'Vencida' : 'Por vencer'}
-                </span>
               </div>
-            ))}
+            )}
+            {porVencerList.length > 0 && (
+              <div>
+                {inactivosList.length > 0 && <hr className="border-border/40 my-2" />}
+                <p className="text-[10px] uppercase tracking-wider text-warning font-semibold mb-1 flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> Por vencer ({porVencerList.length})
+                </p>
+                <div className="space-y-1">
+                  {porVencerList.map(c => {
+                    const ps = payments.filter(p => p.clientId === c.id).sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
+                    const daysSince = Math.floor((Date.now() - new Date(ps[0]?.fechaPago || '').getTime()) / 86400000);
+                    const restan = settings.diasInactividad - daysSince;
+                    return (
+                      <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-warning/5 border border-warning/20">
+                        <div className="min-w-0">
+                          <p className="text-xs truncate">{c.nombre} {c.apellido}</p>
+                          <p className="text-[10px] text-muted-foreground">Vence en {restan} día{restan !== 1 ? 's' : ''}</p>
+                        </div>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium shrink-0 ml-1.5">{restan}d</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+          <button onClick={onRestoreNotifications}
+            className="mt-2 shrink-0 text-[10px] text-muted-foreground hover:text-primary transition-colors text-center">
+            Restaurar notificaciones descartadas
+          </button>
         </div>
 
         {/* Últimos pagos */}

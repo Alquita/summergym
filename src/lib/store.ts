@@ -363,6 +363,10 @@ export async function dismissAllNotificationKeys(keys: string[]): Promise<void> 
   }
 }
 
+export async function restoreAllNotifications(): Promise<void> {
+  await supabase.from('notificaciones_descartadas').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+}
+
 // ============ Export / Import ============
 export async function exportAllData(): Promise<string> {
   const [clients, payments, cashflow, settings] = await Promise.all([

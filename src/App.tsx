@@ -4,8 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
-import { AlertTriangle, Clock, Cake, X } from "lucide-react";
+
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
@@ -14,7 +13,7 @@ import FlujoCaja from "./pages/FlujoCaja";
 import Configuracion from "./pages/Configuracion";
 
 import NotFound from "./pages/NotFound";
-import { syncClientStatuses, seedIfEmpty, getSettings, dismissNotificationKey, dismissAllNotificationKeys } from "./lib/store";
+import { syncClientStatuses, seedIfEmpty, getSettings, dismissNotificationKey, dismissAllNotificationKeys, restoreAllNotifications } from "./lib/store";
 import { Notification, Client } from "./lib/types";
 const queryClient = new QueryClient();
 
@@ -48,35 +47,10 @@ const App = () => {
     })();
   }, [reSync]);
 
-  useEffect(() => {
-    if (!ready) return;
-    notifications.forEach((n, i) => {
-      setTimeout(() => {
-        toast.custom(
-          (t) => {
-            let config: { icon: typeof AlertTriangle; color: string; bg: string; border: string };
-            if (n.type === 'cuota_vencida') config = { icon: AlertTriangle, color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/30' };
-            else if (n.type === 'cuota_por_vencer') config = { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/30' };
-            else config = { icon: Cake, color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/30' };
-            const Icon = config.icon;
-            return (
-              <div className={`flex items-start gap-3 p-3 w-full rounded-lg border ${config.bg} ${config.border}`}>
-                <Icon className={`w-5 h-5 ${config.color} shrink-0 mt-0.5`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{n.clientName}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                </div>
-                <button onClick={() => toast.dismiss(t)} className="text-muted-foreground hover:text-foreground shrink-0 p-0.5">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            );
-          },
-          { duration: 10000 }
-        );
-      }, (i + 1) * 1200);
-    });
-  }, [ready]);
+  const handleRestoreNotifications = useCallback(async () => {
+    await restoreAllNotifications();
+    await reSync();
+  }, [reSync]);
 
   // SW update detection — recarga automática cuando hay nueva versión
   useEffect(() => {
@@ -115,7 +89,7 @@ const App = () => {
                 <div className="flex items-center justify-center py-20 text-muted-foreground">Cargando datos...</div>
               ) : (
                 <Routes>
-                  <Route path="/" element={<Dashboard clients={clients} notifications={notifications} />} />
+                  <Route path="/" element={<Dashboard clients={clients} notifications={notifications} onRestoreNotifications={handleRestoreNotifications} />} />
                   <Route path="/clientes" element={<Clientes />} />
                   <Route path="/pagos" element={<Pagos />} />
                   <Route path="/caja" element={<FlujoCaja />} />

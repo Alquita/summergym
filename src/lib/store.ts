@@ -287,7 +287,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
       const lastPayment = new Date(clientPayments[0].fechaPago);
       const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
 
-      if (daysSince > limite) {
+      if (daysSince > limite + 1) {
         if (client.estado === 'activo') {
           client.estado = 'inactivo';
           updates.push(updateClient(client));
@@ -307,7 +307,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
           notifications.push({
             id: generateId(), type: 'cuota_por_vencer', clientId: client.id,
             clientName: `${client.nombre} ${client.apellido}`,
-            message: `La cuota vence en ${limite - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
+            message: `La cuota vence en ${(limite + 1) - daysSince} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
             date: now.toISOString(), read: false,
           });
         }

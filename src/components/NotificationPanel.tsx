@@ -1,7 +1,16 @@
-import { Bell, X, AlertTriangle, Clock, Cake, Trash2 } from "lucide-react";
+import { Bell, X, AlertTriangle, Clock, Cake, Trash2, MessageCircle } from "lucide-react";
 import { useState, useRef } from "react";
 import { Notification } from "../lib/types";
 import { playNotifSound } from "../lib/sound";
+import { getSettingsSync } from "../lib/store";
+
+function whatsappUrl(telefono: string | undefined, nombre: string, antes: string, despues: string): string | null {
+  if (!telefono) return null;
+  const cleaned = telefono.replace(/[\s\-()]/g, '');
+  const full = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned.startsWith('54') ? cleaned : `549${cleaned}`;
+  const msg = encodeURIComponent(antes + nombre + despues);
+  return `https://wa.me/${full}?text=${msg}`;
+}
 
 function nkey(n: Notification): string {
   if (n.type === 'cumpleanos') return `cumple:${n.clientId}:${new Date().getFullYear()}`;
@@ -82,6 +91,16 @@ export default function NotificationPanel({ notifications, onDismiss, onDismissA
                             <span className={`inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-full font-semibold ${config.bg} ${config.color}`}>
                               {config.label}
                             </span>
+                            {n.type === 'cumpleanos' && n.message.includes('Hoy') && getSettingsSync().waCumpleanosHabilitado && (() => {
+                              const url = whatsappUrl(n.clienteTelefono, n.clientName, getSettingsSync().mensajeCumpleanosAntes, getSettingsSync().mensajeCumpleanosDespues);
+                              if (!url) return null;
+                              return (
+                                <a href={url} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-[#25D366] hover:text-[#1da851] font-medium transition-colors">
+                                  <MessageCircle className="w-3.5 h-3.5" /> Enviar saludo por WhatsApp
+                                </a>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>

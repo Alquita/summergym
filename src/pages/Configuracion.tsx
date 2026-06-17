@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Settings as SettingsIcon, BarChart3, Building2, DollarSign, Upload, Download, Save, Users, TrendingUp, Bell, Lightbulb } from "lucide-react";
+import { Settings as SettingsIcon, BarChart3, Building2, DollarSign, Upload, Download, Save, Users, TrendingUp, Bell, Lightbulb, MessageCircle, Smartphone } from "lucide-react";
 import { getSettings, saveSettings, getClients, getPayments, exportAllData, importAllData } from "../lib/store";
 import { Settings, planPrice } from "../lib/types";
 import { toast } from "sonner";
 
-const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35 };
+const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35, mensajeCumpleanosAntes: '¡Feliz cumpleaños ', mensajeCumpleanosDespues: '! 🎂 Que tengas un excelente día. 🎉', waCumpleanosHabilitado: false };
 
 export default function Configuracion({ onSettingsSaved }: { onSettingsSaved?: () => void }) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
@@ -108,6 +108,45 @@ export default function Configuracion({ onSettingsSaved }: { onSettingsSaved?: (
         </p>
         <Field label="Días hasta marcar Inactivo" type="number" value={String(settings.diasInactividad)} onChange={v => setSettings(s => ({ ...s, diasInactividad: Number(v) || 0 }))} />
         <p className="text-xs text-muted-foreground -mt-1">Los clientes que pasen más de {settings.diasInactividad} días sin pagar se marcan inactivos automáticamente.</p>
+      </Section>
+
+      {/* Birthday WhatsApp */}
+      <Section icon={<MessageCircle className="w-4 h-4" />} title="Saludo de Cumpleaños por WhatsApp">
+        <label className="flex items-center gap-3 cursor-pointer py-2">
+          <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.waCumpleanosHabilitado ? 'bg-success' : 'bg-muted'}`}>
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${settings.waCumpleanosHabilitado ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+            <input type="checkbox" className="sr-only" checked={settings.waCumpleanosHabilitado}
+              onChange={e => setSettings(s => ({ ...s, waCumpleanosHabilitado: e.target.checked }))} />
+          </div>
+          <div className="text-sm">
+            <span className="font-medium">Mostrar botón de WhatsApp en cumpleaños</span>
+            <p className="text-xs text-muted-foreground">Aparecerá un botón en las notificaciones para enviar el saludo</p>
+          </div>
+        </label>
+        {settings.waCumpleanosHabilitado && (
+          <>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1.5">Texto antes del nombre</label>
+              <input type="text" value={settings.mensajeCumpleanosAntes} onChange={e => setSettings(s => ({ ...s, mensajeCumpleanosAntes: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+            </div>
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-secondary/40 border border-border/50">
+              <span className="text-xs text-muted-foreground">Nombre del cliente</span>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1.5">Texto después del nombre</label>
+              <input type="text" value={settings.mensajeCumpleanosDespues} onChange={e => setSettings(s => ({ ...s, mensajeCumpleanosDespues: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+            </div>
+            <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg px-3.5 py-2.5 border border-border/50">
+              <span className="font-semibold text-foreground block mb-0.5">Preview:</span>
+              &ldquo;{settings.mensajeCumpleanosAntes}<span className="text-primary font-semibold">María</span>{settings.mensajeCumpleanosDespues}&rdquo;
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Smartphone className="w-3 h-3" /> El mensaje se enviará desde el número que tengas abierto en WhatsApp Web
+            </p>
+          </>
+        )}
       </Section>
 
       {/* Data Management */}

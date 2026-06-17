@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Clock, Cake, X } from "lucide-react";
+import { AlertTriangle, Clock, Cake, X, MessageCircle } from "lucide-react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
@@ -14,7 +14,7 @@ import FlujoCaja from "./pages/FlujoCaja";
 import Configuracion from "./pages/Configuracion";
 
 import NotFound from "./pages/NotFound";
-import { syncClientStatuses, seedIfEmpty, getSettings, dismissNotificationKey, dismissAllNotificationKeys } from "./lib/store";
+import { syncClientStatuses, seedIfEmpty, getSettings, dismissNotificationKey, dismissAllNotificationKeys, getSettingsSync } from "./lib/store";
 import { Notification, Client } from "./lib/types";
 const queryClient = new QueryClient();
 
@@ -22,6 +22,15 @@ const App = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [ready, setReady] = useState(false);
+
+  const whatsappUrl = (telefono: string | undefined, nombre: string): string | null => {
+    if (!telefono) return null;
+    const cleaned = telefono.replace(/[\s\-()]/g, '');
+    const full = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned.startsWith('54') ? cleaned : `549${cleaned}`;
+    const settings = getSettingsSync();
+    const msg = encodeURIComponent(settings.mensajeCumpleanosAntes + nombre + settings.mensajeCumpleanosDespues);
+    return `https://wa.me/${full}?text=${msg}`;
+  };
 
   const reSync = useCallback(async () => {
     const { updatedClients, notifications: notifs } = await syncClientStatuses();
@@ -62,13 +71,23 @@ const App = () => {
             return (
               <div className={`flex items-start gap-3 p-3 w-full rounded-lg border ${config.bg} ${config.border}`}>
                 <Icon className={`w-5 h-5 ${config.color} shrink-0 mt-0.5`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{n.clientName}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                </div>
-                <button onClick={() => toast.dismiss(t)} className="text-muted-foreground hover:text-foreground shrink-0 p-0.5">
-                  <X className="w-3.5 h-3.5" />
-                </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{n.clientName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
+                    {n.type === 'cumpleanos' && n.message.includes('Hoy') && getSettingsSync().waCumpleanosHabilitado && (() => {
+                      const url = whatsappUrl(n.clienteTelefono, n.clientName);
+                      if (!url) return null;
+                      return (
+                        <a href={url} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 mt-2 text-xs text-[#25D366] hover:text-[#1da851] font-medium transition-colors">
+                          <MessageCircle className="w-3.5 h-3.5" /> Enviar saludo por WhatsApp
+                        </a>
+                      );
+                    })()}
+                  </div>
+                  <button onClick={() => toast.dismiss(t)} className="text-muted-foreground hover:text-foreground shrink-0 p-0.5">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
               </div>
             );
           },

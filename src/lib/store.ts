@@ -13,6 +13,9 @@ const DEFAULT_SETTINGS: Settings = {
   diasInactividad: 35,
   mesActivoMes: new Date().getMonth() + 1,
   mesActivoAnio: new Date().getFullYear(),
+  mensajeCumpleanosAntes: '¡Feliz cumpleaños ',
+  mensajeCumpleanosDespues: '! 🎂 Que tengas un excelente día. 🎉',
+  waCumpleanosHabilitado: false,
 };
 
 // ============ Mappers ============
@@ -114,6 +117,9 @@ export async function getSettings(): Promise<Settings> {
     diasInactividad: data.dias_inactividad,
     mesActivoMes: data.mes_activo_mes ?? new Date().getMonth() + 1,
     mesActivoAnio: data.mes_activo_anio ?? new Date().getFullYear(),
+    mensajeCumpleanosAntes: data.mensaje_cumpleanos_antes ?? DEFAULT_SETTINGS.mensajeCumpleanosAntes,
+    mensajeCumpleanosDespues: data.mensaje_cumpleanos_despues ?? DEFAULT_SETTINGS.mensajeCumpleanosDespues,
+    waCumpleanosHabilitado: data.wa_cumpleanos_habilitado ?? DEFAULT_SETTINGS.waCumpleanosHabilitado,
   };
   return cachedSettings;
 }
@@ -135,6 +141,9 @@ export async function saveSettings(s: Settings): Promise<void> {
     dias_inactividad: s.diasInactividad,
     mes_activo_mes: s.mesActivoMes,
     mes_activo_anio: s.mesActivoAnio,
+    mensaje_cumpleanos_antes: s.mensajeCumpleanosAntes,
+    mensaje_cumpleanos_despues: s.mensajeCumpleanosDespues,
+    wa_cumpleanos_habilitado: s.waCumpleanosHabilitado,
     updated_at: new Date().toISOString(),
   });
 }
@@ -326,6 +335,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
             ? `¡Hoy es su cumpleaños! 🎂`
             : `Cumpleaños en ${daysUntil} día${daysUntil > 1 ? 's' : ''} (${thisYearBday.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })})`,
           date: now.toISOString(), read: false,
+          clienteTelefono: client.telefono,
         });
       }
     }

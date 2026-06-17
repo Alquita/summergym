@@ -54,6 +54,7 @@ export interface Notification {
   message: string;
   date: string;
   read: boolean;
+  clienteTelefono?: string;
 }
 
 export interface Settings {
@@ -68,6 +69,9 @@ export interface Settings {
   diasInactividad: number;
   mesActivoMes: number;
   mesActivoAnio: number;
+  mensajeCumpleanosAntes: string;
+  mensajeCumpleanosDespues: string;
+  waCumpleanosHabilitado: boolean;
 }
 
 export function planPrice(plan: string | undefined, s: Settings): number {

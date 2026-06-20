@@ -16,6 +16,9 @@ const DEFAULT_SETTINGS: Settings = {
   mensajeCumpleanosAntes: '¡Feliz cumpleaños ',
   mensajeCumpleanosDespues: '! 🎂 Que tengas un excelente día. 🎉',
   waCumpleanosHabilitado: false,
+  mensajeCuotaAntes: '¡Hola ',
+  mensajeCuotaDespues: '! Te recordamos que tu cuota está vencida. Por favor, acercate a pagar. 🙏',
+  waCuotaHabilitado: false,
 };
 
 // ============ Mappers ============
@@ -120,6 +123,9 @@ export async function getSettings(): Promise<Settings> {
     mensajeCumpleanosAntes: data.mensaje_cumpleanos_antes ?? DEFAULT_SETTINGS.mensajeCumpleanosAntes,
     mensajeCumpleanosDespues: data.mensaje_cumpleanos_despues ?? DEFAULT_SETTINGS.mensajeCumpleanosDespues,
     waCumpleanosHabilitado: data.wa_cumpleanos_habilitado ?? DEFAULT_SETTINGS.waCumpleanosHabilitado,
+    mensajeCuotaAntes: data.mensaje_cuota_antes ?? DEFAULT_SETTINGS.mensajeCuotaAntes,
+    mensajeCuotaDespues: data.mensaje_cuota_despues ?? DEFAULT_SETTINGS.mensajeCuotaDespues,
+    waCuotaHabilitado: data.wa_cuota_habilitado ?? DEFAULT_SETTINGS.waCuotaHabilitado,
   };
   return cachedSettings;
 }
@@ -144,6 +150,9 @@ export async function saveSettings(s: Settings): Promise<void> {
     mensaje_cumpleanos_antes: s.mensajeCumpleanosAntes,
     mensaje_cumpleanos_despues: s.mensajeCumpleanosDespues,
     wa_cumpleanos_habilitado: s.waCumpleanosHabilitado,
+    mensaje_cuota_antes: s.mensajeCuotaAntes,
+    mensaje_cuota_despues: s.mensajeCuotaDespues,
+    wa_cuota_habilitado: s.waCuotaHabilitado,
     updated_at: new Date().toISOString(),
   });
 }
@@ -306,6 +315,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
           clientName: `${client.nombre} ${client.apellido}`,
           message: `Cuota vencida hace ${daysSince - (limite - 5)} días. Último pago: ${lastPayment.toLocaleDateString('es-AR')}`,
           date: now.toISOString(), read: false,
+          clienteTelefono: client.telefono,
         });
       } else {
         if (client.estado === 'inactivo') {

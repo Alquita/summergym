@@ -23,12 +23,11 @@ const App = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [ready, setReady] = useState(false);
 
-  const whatsappUrl = (telefono: string | undefined, nombre: string): string | null => {
+  const whatsappUrl = (telefono: string | undefined, nombre: string, antes: string, despues: string): string | null => {
     if (!telefono) return null;
     const cleaned = telefono.replace(/[\s\-()]/g, '');
     const full = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned.startsWith('54') ? cleaned : `549${cleaned}`;
-    const settings = getSettingsSync();
-    const msg = encodeURIComponent(settings.mensajeCumpleanosAntes + nombre + settings.mensajeCumpleanosDespues);
+    const msg = encodeURIComponent(antes + nombre + despues);
     return `https://wa.me/${full}?text=${msg}`;
   };
 
@@ -75,12 +74,24 @@ const App = () => {
                     <p className="text-sm font-semibold">{n.clientName}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
                     {n.type === 'cumpleanos' && n.message.includes('Hoy') && getSettingsSync().waCumpleanosHabilitado && (() => {
-                      const url = whatsappUrl(n.clienteTelefono, n.clientName);
+                      const s = getSettingsSync();
+                      const url = whatsappUrl(n.clienteTelefono, n.clientName, s.mensajeCumpleanosAntes, s.mensajeCumpleanosDespues);
                       if (!url) return null;
                       return (
                         <a href={url} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 mt-2 text-xs text-[#25D366] hover:text-[#1da851] font-medium transition-colors">
                           <MessageCircle className="w-3.5 h-3.5" /> Enviar saludo por WhatsApp
+                        </a>
+                      );
+                    })()}
+                    {n.type === 'cuota_vencida' && getSettingsSync().waCuotaHabilitado && (() => {
+                      const s = getSettingsSync();
+                      const url = whatsappUrl(n.clienteTelefono, n.clientName, s.mensajeCuotaAntes, s.mensajeCuotaDespues);
+                      if (!url) return null;
+                      return (
+                        <a href={url} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 mt-2 text-xs text-[#25D366] hover:text-[#1da851] font-medium transition-colors">
+                          <MessageCircle className="w-3.5 h-3.5" /> Enviar mensaje por WhatsApp
                         </a>
                       );
                     })()}

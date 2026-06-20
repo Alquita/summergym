@@ -4,7 +4,7 @@ import { getSettings, saveSettings, getClients, getPayments, exportAllData, impo
 import { Settings, planPrice } from "../lib/types";
 import { toast } from "sonner";
 
-const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35, mensajeCumpleanosAntes: '¡Feliz cumpleaños ', mensajeCumpleanosDespues: '! 🎂 Que tengas un excelente día. 🎉', waCumpleanosHabilitado: false };
+const DEFAULTS: Settings = { gymName: 'Summer Gym', direccion: '', telefono: '', precioPaseLibre: 35000, precio3xSemana: 30000, precio2xSemana: 25000, precio1Dia: 10000, diasAlerta: 5, diasInactividad: 35, mensajeCumpleanosAntes: '¡Feliz cumpleaños ', mensajeCumpleanosDespues: '! 🎂 Que tengas un excelente día. 🎉', waCumpleanosHabilitado: false, mensajeCuotaAntes: '¡Hola ', mensajeCuotaDespues: '! Te recordamos que tu cuota está vencida. Por favor, acercate a pagar. 🙏', waCuotaHabilitado: false };
 
 export default function Configuracion({ onSettingsSaved }: { onSettingsSaved?: () => void }) {
   const [settings, setSettings] = useState<Settings>(DEFAULTS);
@@ -141,6 +141,45 @@ export default function Configuracion({ onSettingsSaved }: { onSettingsSaved?: (
             <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg px-3.5 py-2.5 border border-border/50">
               <span className="font-semibold text-foreground block mb-0.5">Preview:</span>
               &ldquo;{settings.mensajeCumpleanosAntes}<span className="text-primary font-semibold">María</span>{settings.mensajeCumpleanosDespues}&rdquo;
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Smartphone className="w-3 h-3" /> El mensaje se enviará desde el número que tengas abierto en WhatsApp Web
+            </p>
+          </>
+        )}
+      </Section>
+
+      {/* Cuota Vencida WhatsApp */}
+      <Section icon={<MessageCircle className="w-4 h-4" />} title="Mensaje de Cuota Vencida por WhatsApp">
+        <label className="flex items-center gap-3 cursor-pointer py-2">
+          <div className={`w-11 h-6 rounded-full transition-colors relative ${settings.waCuotaHabilitado ? 'bg-success' : 'bg-muted'}`}>
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${settings.waCuotaHabilitado ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+            <input type="checkbox" className="sr-only" checked={settings.waCuotaHabilitado}
+              onChange={e => setSettings(s => ({ ...s, waCuotaHabilitado: e.target.checked }))} />
+          </div>
+          <div className="text-sm">
+            <span className="font-medium">Mostrar botón de WhatsApp en cuotas vencidas</span>
+            <p className="text-xs text-muted-foreground">Aparecerá un botón en las notificaciones para enviar el mensaje</p>
+          </div>
+        </label>
+        {settings.waCuotaHabilitado && (
+          <>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1.5">Texto antes del nombre</label>
+              <input type="text" value={settings.mensajeCuotaAntes} onChange={e => setSettings(s => ({ ...s, mensajeCuotaAntes: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+            </div>
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-secondary/40 border border-border/50">
+              <span className="text-xs text-muted-foreground">Nombre del cliente</span>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold block mb-1.5">Texto después del nombre</label>
+              <input type="text" value={settings.mensajeCuotaDespues} onChange={e => setSettings(s => ({ ...s, mensajeCuotaDespues: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all" />
+            </div>
+            <div className="text-xs text-muted-foreground bg-muted/30 rounded-lg px-3.5 py-2.5 border border-border/50">
+              <span className="font-semibold text-foreground block mb-0.5">Preview:</span>
+              &ldquo;{settings.mensajeCuotaAntes}<span className="text-primary font-semibold">María</span>{settings.mensajeCuotaDespues}&rdquo;
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <Smartphone className="w-3 h-3" /> El mensaje se enviará desde el número que tengas abierto en WhatsApp Web

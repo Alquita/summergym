@@ -72,6 +72,9 @@ export interface Settings {
   mensajeCumpleanosAntes: string;
   mensajeCumpleanosDespues: string;
   waCumpleanosHabilitado: boolean;
+  mensajeCuotaAntes: string;
+  mensajeCuotaDespues: string;
+  waCuotaHabilitado: boolean;
 }
 
 export function planPrice(plan: string | undefined, s: Settings): number {

@@ -4,6 +4,7 @@ import { DatePicker } from "../components/ui/date-picker";
 import { toDate, fromDate } from "../lib/date-utils";
 import { getPayments, savePayment, getClients, saveClient, updateClient, getSettings, getSettingsSync } from "../lib/store";
 import { Payment, Client, Settings, planPrice } from "../lib/types";
+import { Switch } from "../components/ui/switch";
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const metodos: Payment['modalidadPago'][] = ['Efectivo', 'Transferencia', 'Debito', 'Credito'];
@@ -39,6 +40,7 @@ export default function Pagos() {
     mes: meses[new Date().getMonth()],
     anio: new Date().getFullYear(),
   });
+  const [pagoVisible, setPagoVisible] = useState(false);
 
   const refresh = async () => {
     const [ps, cs, s] = await Promise.all([getPayments(), getClients(), getSettings()]);
@@ -72,7 +74,7 @@ export default function Pagos() {
 
   const handleNewClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClient.nombre || !newClient.apellido || !newPago.monto) return;
+    if (!newClient.nombre || !newClient.apellido) return;
     const edad = newClient.fechaNacimiento
       ? Math.floor((Date.now() - new Date(newClient.fechaNacimiento).getTime()) / 31557600000)
       : undefined;
@@ -82,16 +84,18 @@ export default function Pagos() {
       fechaIngreso: new Date().toISOString().split('T')[0],
       edad,
     });
-    await savePayment({
-      clientId: created.id,
-      clientName: `${created.apellido} ${created.nombre}`,
-      plan: created.plan || 'Pase libre',
-      modalidadPago: newPago.modalidadPago,
-      monto: Number(newPago.monto),
-      fechaPago: newPago.fechaPago,
-      mes: newPago.mes,
-      anio: newPago.anio,
-    });
+    if (pagoVisible && newPago.monto && Number(newPago.monto) > 0) {
+      await savePayment({
+        clientId: created.id,
+        clientName: `${created.apellido} ${created.nombre}`,
+        plan: created.plan || 'Pase libre',
+        modalidadPago: newPago.modalidadPago,
+        monto: Number(newPago.monto),
+        fechaPago: newPago.fechaPago,
+        mes: newPago.mes,
+        anio: newPago.anio,
+      });
+    }
     await refresh();
     setNewClient(emptyNewClient);
     setNewPago({
@@ -296,28 +300,37 @@ export default function Pagos() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3 flex items-center gap-2">
-              <CreditCard className="w-3 h-3" /> 2. Primer Pago
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase flex items-center gap-2">
+                <CreditCard className="w-3 h-3" /> 2. Primer Pago
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs text-muted-foreground">{pagoVisible ? 'Activado' : 'Desactivado'}</span>
+                <Switch checked={pagoVisible} onCheckedChange={setPagoVisible} />
+              </label>
+            </div>
+            {pagoVisible && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago *</label>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Fecha de Pago</label>
                 <div className="relative">
                   <DatePicker date={toDate(newPago.fechaPago)} onDateChange={d => { const date = fromDate(d); const dt = new Date(date + 'T12:00:00'); setNewPago(p => ({ ...p, fechaPago: date, mes: meses[dt.getMonth()], anio: dt.getFullYear() })); }} placeholder="Seleccionar fecha" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Monto *</label>
+                <label className="text-xs text-muted-foreground font-medium mb-1.5 block">Monto</label>
                 <div className="relative">
                   <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input type="number" value={newPago.monto} onChange={e => setNewPago(p => ({ ...p, monto: e.target.value }))} required
+                  <input type="number" value={newPago.monto} onChange={e => setNewPago(p => ({ ...p, monto: e.target.value }))}
                     placeholder="35000"
                     className="w-full pl-10 pr-3 py-2.5 bg-input/60 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
             </div>
+            )}
+            {pagoVisible && (
             <div className="mt-4">
-              <label className="text-xs text-muted-foreground font-medium mb-2 block">Método de Pago *</label>
+              <label className="text-xs text-muted-foreground font-medium mb-2 block">Método de Pago</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {metodos.map(m => {
                   const active = newPago.modalidadPago === m;
@@ -333,11 +346,12 @@ export default function Pagos() {
                 })}
               </div>
             </div>
+            )}
           </div>
 
           <button type="submit"
             className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity">
-            <CheckCircle2 className="w-5 h-5" /> Registrar Cliente y Pago
+            <CheckCircle2 className="w-5 h-5" /> {pagoVisible ? 'Registrar Cliente + Pago' : 'Registrar Cliente'}
           </button>
         </form>
       </div>

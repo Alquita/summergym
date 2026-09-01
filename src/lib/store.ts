@@ -302,7 +302,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
       .sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
 
     if (clientPayments.length > 0) {
-      const lastPayment = new Date(clientPayments[0].fechaPago);
+      const lastPayment = new Date(clientPayments[0].fechaPago + 'T12:00:00');
       const daysSince = Math.floor((now.getTime() - lastPayment.getTime()) / 86400000);
 
       if (daysSince > limite + 1) {
@@ -336,7 +336,7 @@ export async function syncClientStatuses(): Promise<{ updatedClients: Client[]; 
     if (client.fechaNacimiento) {
       const bday = new Date(client.fechaNacimiento + 'T12:00:00');
       const thisYearBday = new Date(now.getFullYear(), bday.getMonth(), bday.getDate());
-      const daysUntil = Math.floor((thisYearBday.getTime() - now.getTime()) / 86400000);
+      const daysUntil = Math.ceil((thisYearBday.getTime() - now.getTime()) / 86400000);
       if (daysUntil >= 0 && daysUntil <= 7) {
         notifications.push({
           id: generateId(), type: 'cumpleanos', clientId: client.id,

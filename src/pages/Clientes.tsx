@@ -41,7 +41,7 @@ export default function Clientes() {
       .filter(p => p.clientId === viewingClient.id)
       .sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
     if (ps.length === 0) return { kind: 'none' as const };
-    const last = new Date(ps[0].fechaPago);
+    const last = new Date(ps[0].fechaPago + 'T12:00:00');
     const days = Math.floor((Date.now() - last.getTime()) / 86400000);
     if (days > 35) return { kind: 'vencido' as const, days: days - 30, last };
     if (days >= 25) return { kind: 'por_vencer' as const, days: 35 - days, last };
